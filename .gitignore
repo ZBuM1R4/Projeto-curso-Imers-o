@@ -1,0 +1,29 @@
+# Ambiente virtual
+.venv/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Arquivos de ambiente/editor
+.vscode/
+.idea/
+
+# Arquivos temporários
+*.log
+*.tmp
+.DS_Store
+
+# Dados locais do projeto
+data/temp/
+data/output/
+
+# Vídeos e áudios de teste
+data/input/
+*.wav
+*.mp3
+*.mp4
+
+# Modelos/cache
+*.pt
