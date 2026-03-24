@@ -22,12 +22,15 @@ Projeto em Python para análise de comunicação a partir de vídeos, com foco e
 
 ## 📂 Estrutura do projeto
 
-app/
-  services/
-  ui/
-  utils/
-data/
-tests/
+```
+├── app/
+│   ├── ui/
+│   │   └── dashboard.py
+│   └── services/
+├── data/
+├── tests/
+├── utils/
+```
 
 ## ▶️ Como rodar o projeto
 
