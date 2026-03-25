@@ -4,9 +4,13 @@ def build_report(
     pause_data: dict,
     frequent_terms: dict,
     sequential_repetitions: list,
+    score_data: dict,
+    attention_points: list[str],
 ) -> dict:
     return {
         "transcricao": transcription_text,
+        "score_comunicacao": score_data,
+        "pontos_atencao": attention_points,
         "vicios_de_linguagem": filler_words,
         "pausas": {
             "duracao_total": pause_data.get("duracao_total", 0),

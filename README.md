@@ -10,6 +10,8 @@ Projeto em Python para análise de comunicação a partir de vídeos, com foco e
 - Detecção de vícios de linguagem (ex: "né", "então", "assim")
 - Análise de pausas e silêncio
 - Identificação de termos mais recorrentes
+- Marcação visual da transcrição (vícios e termos recorrentes)
+- Alternância entre transcrição limpa e anotada
 - Interface com Streamlit
 
 ## 🧠 Tecnologias utilizadas
@@ -62,7 +64,7 @@ python -m streamlit run app/ui/dashboard.py
 1. Execute a aplicação
 2. Faça upload de um vídeo
 3. Clique em "Analisar vídeo"
-4. Visualize os resultados na tela:
+4. Visualize os resultados na tela e, se desejar, ative a exibição de marcações na transcrição
     - Transcrição
     - Vícios de linguagem
     - Pausas
