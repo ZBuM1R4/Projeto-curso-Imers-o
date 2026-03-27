@@ -5,6 +5,9 @@ from app.services.attention_points_analyzer import generate_attention_points
 from app.services.audio_extractor import extract_audio
 from app.services.docx_exporter import build_docx_report
 from app.services.filler_word_analyzer import analyze_filler_words
+from app.services.gemini_full_context_analyzer import (
+    analyze_full_transcription_with_gemini,
+)
 from app.services.pause_analyzer import analyze_pauses
 from app.services.report_builder import build_report
 from app.services.repetition_analyzer import (
@@ -54,6 +57,9 @@ def generate_report(video_path: str, audio_path: str):
         score_data=score_data,
         attention_points=attention_points,
     )
+
+    ai_full_analysis = analyze_full_transcription_with_gemini(texto)
+    report["analise_global_ia"] = ai_full_analysis
 
     return report
 
@@ -106,10 +112,6 @@ def render_home():
         st.write(f"**Classificação:** {score_data['classificacao']}")
         st.write(score_data["comentario"])
 
-        st.subheader("Pontos de atenção")
-        for ponto in report["pontos_atencao"]:
-            st.write(f"⚠️ {ponto}")
-
         st.subheader("Transcrição")
 
         show_markers = st.toggle("Exibir marcações na transcrição", value=False)
@@ -118,6 +120,7 @@ def render_home():
             st.caption("Legenda:")
             st.caption("🔴 vício de linguagem")
             st.caption("🟡 termo recorrente")
+
             marked_text = highlight_transcription(
                 report["transcricao"],
                 report["repeticoes"]["termos_recorrentes"]
@@ -125,6 +128,19 @@ def render_home():
             st.markdown(marked_text, unsafe_allow_html=True)
         else:
             st.write(report["transcricao"])
+
+        st.subheader("Análise global por IA")
+        analise_ia = report.get("analise_global_ia", {})
+
+        if analise_ia.get("disponivel"):
+            st.success(analise_ia.get("mensagem", ""))
+            st.write(analise_ia.get("analise", ""))
+        else:
+            st.info(analise_ia.get("mensagem", ""))
+
+        st.subheader("Pontos de atenção")
+        for ponto in report["pontos_atencao"]:
+            st.write(f"⚠️ {ponto}")
 
         st.subheader("Vícios de linguagem")
         if report["vicios_de_linguagem"]:
@@ -141,7 +157,6 @@ def render_home():
         st.write(f"🔇 Tempo em silêncio: {pausas['tempo_total_silencio']}s")
 
         if pausas["pausas_longas"]:
-            st.write("Pausas detectadas:")
             for p in pausas["pausas_longas"]:
                 st.write(
                     f"- {round(p['start'], 2)}s → "
@@ -155,14 +170,12 @@ def render_home():
         repeticoes = report["repeticoes"]
 
         if repeticoes["sequenciais"]:
-            st.write("Repetições em sequência:")
             for r in repeticoes["sequenciais"]:
                 st.write(f"- {r['termo']}")
         else:
             st.write("Nenhuma repetição em sequência.")
 
         if repeticoes["termos_recorrentes"]:
-            st.write("Termos mais recorrentes:")
             for termo, qtd in repeticoes["termos_recorrentes"].items():
                 st.write(f"- {termo}: {qtd}")
         else:
@@ -189,11 +202,10 @@ def render_home():
 
 def render_bi():
     st.title("Painel BI")
-    st.write("Visualização analítica da comunicação.")
 
     if "report" not in st.session_state:
-        st.warning("Nenhuma análise encontrada. Volte para a tela inicial e analise um vídeo.")
-        if st.button("Voltar para tela inicial"):
+        st.warning("Nenhuma análise encontrada.")
+        if st.button("Voltar"):
             st.session_state["page"] = "home"
             st.rerun()
         return
@@ -205,69 +217,45 @@ def render_bi():
         st.session_state["page"] = "home"
         st.rerun()
 
-    st.divider()
+    st.subheader("Score")
+    st.metric("Pontuação", f"{score_data['score']}/100")
 
-    st.subheader("Score de comunicação")
-    st.metric("Pontuação geral", f"{score_data['score']}/100")
-    st.write(f"**Classificação:** {score_data['classificacao']}")
-    st.write(score_data["comentario"])
-
-    st.subheader("Pontos de atenção")
-    for ponto in report["pontos_atencao"]:
-        st.write(f"⚠️ {ponto}")
-
-    st.divider()
-
-    st.subheader("Indicadores principais")
     pausas = report["pausas"]
     repeticoes = report["repeticoes"]
-    filler_words = report["vicios_de_linguagem"]
+
+    st.subheader("Análise global por IA")
+    analise_ia = report.get("analise_global_ia", {})
+
+    if analise_ia.get("disponivel"):
+        st.success(analise_ia.get("mensagem", ""))
+        st.write(analise_ia.get("analise", ""))
+    else:
+        st.info(analise_ia.get("mensagem", ""))
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Pausas longas", pausas["quantidade_pausas_longas"])
-    col2.metric("Tempo em silêncio", f"{pausas['tempo_total_silencio']}s")
-    col3.metric("Termos recorrentes", len(repeticoes["termos_recorrentes"]))
+    col1.metric("Pausas", pausas["quantidade_pausas_longas"])
+    col2.metric("Silêncio", f"{pausas['tempo_total_silencio']}s")
+    col3.metric("Repetições", len(repeticoes["termos_recorrentes"]))
 
-    st.divider()
+    st.subheader("Gráficos")
 
-    st.subheader("Vícios de linguagem")
-    if filler_words:
-        termos = list(filler_words.keys())
-        valores = list(filler_words.values())
-
+    if report["vicios_de_linguagem"]:
         fig, ax = plt.subplots()
-        ax.bar(termos, valores)
-        ax.set_ylabel("Ocorrências")
-        ax.set_title("Frequência de vícios de linguagem")
+        ax.bar(
+            list(report["vicios_de_linguagem"].keys()),
+            list(report["vicios_de_linguagem"].values())
+        )
         st.pyplot(fig)
-    else:
-        st.write("Nenhum vício de linguagem encontrado.")
-
-    st.subheader("Termos mais recorrentes")
-    if repeticoes["termos_recorrentes"]:
-        termos = list(repeticoes["termos_recorrentes"].keys())
-        valores = list(repeticoes["termos_recorrentes"].values())
-
-        fig, ax = plt.subplots()
-        ax.bar(termos, valores)
-        ax.set_ylabel("Ocorrências")
-        ax.set_title("Termos mais recorrentes")
-        st.pyplot(fig)
-    else:
-        st.write("Nenhum termo recorrente relevante.")
-
-    st.subheader("Fala vs silêncio")
-    tempo_total = pausas["duracao_total"]
-    tempo_silencio = pausas["tempo_total_silencio"]
-    tempo_fala = max(tempo_total - tempo_silencio, 0)
 
     fig, ax = plt.subplots()
     ax.pie(
-        [tempo_fala, tempo_silencio],
+        [
+            pausas["duracao_total"] - pausas["tempo_total_silencio"],
+            pausas["tempo_total_silencio"],
+        ],
         labels=["Fala", "Silêncio"],
         autopct="%1.1f%%"
     )
-    ax.set_title("Distribuição entre fala e silêncio")
     st.pyplot(fig)
 
 

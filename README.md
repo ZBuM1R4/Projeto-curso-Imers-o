@@ -7,6 +7,7 @@ Projeto em Python para análise de comunicação a partir de vídeos, com foco e
 - Upload de vídeo via interface web
 - Pré-visualização do vídeo
 - Transcrição automática (Whisper)
+- Análise global da comunicação utilizando IA (Gemini)
 - Detecção de vícios de linguagem (ex: "né", "então", "assim")
 - Análise de pausas e silêncio
 - Identificação de termos mais recorrentes
@@ -53,8 +54,17 @@ source .venv/Scripts/activate
 ```bash
 pip install -r requirements.txt
 ```
+### 4. 🔐 Variáveis de ambiente
 
-### 4. Rodar aplicação
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+GEMINI_API_KEY=sua_chave_aqui
+GEMINI_MODEL=gemini-2.5-flash
+
+⚠️ A análise por IA depende dessas variáveis.  
+Caso não estejam configuradas, o sistema continuará funcionando sem a análise global por IA.
+
+### 5. Rodar aplicação
 
 ```bash
 python -m streamlit run app/ui/dashboard.py
@@ -77,7 +87,7 @@ python -m streamlit run app/ui/dashboard.py
 - O sistema roda localmente (sem backend remoto)
 
 ## 🔮 Próximos passos
-- Melhorar análise semântica da transcrição
-- Adicionar gráficos (barras e pizza)
-- Refinar detecção de vícios
-- Exportação de relatórios
+- Refinar layout da UI
+- Adicionar mais informações a tela de BI
+- Melhorar a qualidade e nível de detalhes do relatório (.DOCX editável)
+- Aumentar a capacidade de upload de arquivos

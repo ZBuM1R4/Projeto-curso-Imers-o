@@ -1,6 +1,9 @@
 # Ambiente virtual
 .venv/
 
+# Arquivos de ambiente (CRÍTICO)
+.env
+
 # Cache Python
 __pycache__/
 *.py[cod]
