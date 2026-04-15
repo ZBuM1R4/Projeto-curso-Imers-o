@@ -45,7 +45,14 @@ def generate_report(video_path: str, audio_path: str):
         },
     }
 
-    score_data = calculate_communication_score(partial_report)
+    ai_full_analysis = analyze_full_transcription_with_gemini(texto)
+    ia_metricas = ai_full_analysis.get("metricas", {})
+
+    score_data = calculate_communication_score(
+        partial_report,
+        ia_metricas=ia_metricas
+    )
+
     attention_points = generate_attention_points(partial_report)
 
     report = build_report(
@@ -58,7 +65,6 @@ def generate_report(video_path: str, audio_path: str):
         attention_points=attention_points,
     )
 
-    ai_full_analysis = analyze_full_transcription_with_gemini(texto)
     report["analise_global_ia"] = ai_full_analysis
 
     return report
