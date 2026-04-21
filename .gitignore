@@ -1,32 +1,35 @@
 # Ambiente virtual
 .venv/
+venv/
+env/
 
-# Arquivos de ambiente (CRÍTICO)
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Variáveis de ambiente
 .env
 
-# Cache Python
-__pycache__/
-*.py[cod]
-*.pyo
+# Dados do projeto
+data/input/*
+data/temp/*
+data/output/*
 
-# Arquivos de ambiente/editor
-.vscode/
-.idea/
-
-# Arquivos temporários
+# Logs
 *.log
-*.tmp
+
+# VS Code
+.vscode/
+
+# Sistema
 .DS_Store
+Thumbs.db
 
-# Dados locais do projeto
-data/temp/
-data/output/
-
-# Vídeos e áudios de teste
-data/input/
-*.wav
-*.mp3
+# Arquivos grandes (opcional)
 *.mp4
-
-# Modelos/cache
-*.pt
+*.mov
+*.avi
+*.mkv
+*.wav

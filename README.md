@@ -23,14 +23,23 @@ Projeto em Python para análise de comunicação a partir de vídeos, com foco e
 - FFmpeg
 - WebRTC VAD
 
+## ⚙️ Requisitos
+
+- Python 3.10+
+- FFmpeg instalado e configurado no PATH
+
 ## 📂 Estrutura do projeto
 
 ```
 ├── app/
-│   ├── ui/
+│   ├── ui/           # interface Streamlit
 │   │   └── dashboard.py
-│   └── services/
+│   ├── services/     # lógica de análise
+│   └── utils/        # utilitários
 ├── data/
+│   ├── input/
+│   ├── temp/
+│   └── output/
 ├── tests/
 ├── utils/
 ```
@@ -84,6 +93,9 @@ python -m streamlit run app/ui/dashboard.py
 - Projeto em fase de MVP
 - A qualidade da transcrição depende do áudio
 - Algumas disfluências podem não ser captadas diretamente
+- FFmpeg é obrigatório para extração de áudio
+- Sem conexão com a internet, a análise por IA é desativada automaticamente
+- Dados de entrada (vídeos) não são versionados
 - O sistema roda localmente (sem backend remoto)
 
 ## 🔮 Próximos passos
