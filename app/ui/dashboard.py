@@ -1,9 +1,18 @@
 import matplotlib.pyplot as plt
 import streamlit as st
 
+from app.database.db import (
+    create_tables,
+    delete_analysis,
+    get_all_analyses,
+    get_analysis_by_id,
+    get_average_score,
+    get_history_stats,
+    get_score_history,
+    save_analysis,
+)
 from app.services.attention_points_analyzer import generate_attention_points
 from app.services.audio_extractor import extract_audio
-from app.services.docx_exporter import build_docx_report
 from app.services.filler_word_analyzer import analyze_filler_words
 from app.services.gemini_full_context_analyzer import (
     analyze_full_transcription_with_gemini,
@@ -21,6 +30,97 @@ from app.utils.file_manager import save_uploaded_file
 
 
 st.set_page_config(page_title="Análise de Comunicação", layout="centered")
+
+create_tables()
+
+
+def get_score_color(score: float) -> str:
+    if score == 0:
+        return "#d9d9d9"
+    if score <= 20:
+        return "#ff4d4d"
+    if score <= 40:
+        return "#ff9900"
+    if score <= 60:
+        return "#ffd966"
+    if score < 80:
+        return "#93c47d"
+    return "#00b050"
+
+
+def render_score_circle(score: float):
+    color = get_score_color(score)
+
+    html = f"""
+    <div style="
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: conic-gradient({color} {score}%, #e6e6e6 {score}%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 20px auto;
+    ">
+        <div style="
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #222222;
+        ">
+            {score:.1f}%
+        </div>
+    </div>
+    """
+
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def render_score_badge(score: int):
+    color = get_score_color(score)
+
+    st.markdown(
+        f"""
+        <div style="
+            background-color: {color};
+            padding: 8px 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            min-width: 80px;
+        ">
+            {score}/100
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def render_score_evolution_chart():
+    history = get_score_history()
+
+    if len(history) < 2:
+        st.info("Faça pelo menos duas análises para visualizar a evolução.")
+        return
+
+    labels = [str(index + 1) for index, _ in enumerate(history)]
+    scores = [row[1] for row in history]
+
+    fig, ax = plt.subplots()
+    ax.plot(labels, scores, marker="o")
+    ax.set_ylim(0, 100)
+    ax.set_xlabel("Análises")
+    ax.set_ylabel("Score")
+    ax.set_title("Evolução do score ao longo do tempo")
+
+    st.pyplot(fig)
 
 
 def generate_report(video_path: str, audio_path: str):
@@ -67,19 +167,70 @@ def generate_report(video_path: str, audio_path: str):
 
     report["analise_global_ia"] = ai_full_analysis
 
+    save_analysis(report, video_path)
+
     return report
+
+
+def render_report_details(report: dict):
+    score_data = report["score_comunicacao"]
+
+    st.subheader("Score de comunicação")
+    st.metric("Pontuação geral", f"{score_data['score']}/100")
+    st.write(f"**Classificação:** {score_data['classificacao']}")
+    st.write(score_data["comentario"])
+
+    analise_ia = report.get("analise_global_ia", {})
+
+    if not analise_ia.get("disponivel", False):
+        st.warning(
+            "⚠️ Esta análise foi gerada sem a avaliação da IA. "
+            "Os resultados podem apresentar inconsistências."
+        )
+
+    st.subheader("Transcrição")
+
+    show_markers = st.toggle("Exibir marcações na transcrição", value=False)
+
+    if show_markers:
+        st.caption("Legenda:")
+        st.caption("🔴 vício de linguagem")
+        st.caption("🟡 termo recorrente")
+
+        marked_text = highlight_transcription(
+            report["transcricao"],
+            report["repeticoes"]["termos_recorrentes"]
+        )
+        st.markdown(marked_text, unsafe_allow_html=True)
+    else:
+        st.write(report["transcricao"])
+
+    st.subheader("Análise global por IA")
+
+    if analise_ia.get("disponivel"):
+        st.success(analise_ia.get("mensagem", ""))
+        st.write(analise_ia.get("analise", ""))
+    else:
+        st.info(analise_ia.get("mensagem", ""))
+
+    st.subheader("Pontos de atenção")
+    for ponto in report["pontos_atencao"]:
+        st.write(f"⚠️ {ponto}")
 
 
 def render_home():
     st.title("Análise de Comunicação por Vídeo")
-    st.write("Faça upload de um vídeo para gerar a análise inicial.")
+
+    if st.button("Ver histórico de análises"):
+        st.session_state["page"] = "history"
+        st.rerun()
 
     uploaded_file = st.file_uploader(
         "Envie um vídeo",
         type=["mp4", "mov", "avi", "mkv"]
     )
 
-    if uploaded_file is not None:
+    if uploaded_file:
         video_path = f"data/input/{uploaded_file.name}"
         audio_path = "data/temp/audio.wav"
 
@@ -88,13 +239,9 @@ def render_home():
         st.session_state["video_path"] = video_path
         st.session_state["audio_path"] = audio_path
 
-        st.info("Vídeo enviado com sucesso.")
-
     if "video_path" in st.session_state:
-        st.subheader("Pré-visualização do vídeo")
         st.video(st.session_state["video_path"])
 
-    if "video_path" in st.session_state and "audio_path" in st.session_state:
         if st.button("Analisar vídeo"):
             with st.spinner("Processando vídeo..."):
                 report = generate_report(
@@ -103,166 +250,117 @@ def render_home():
                 )
 
                 if not report:
-                    st.error("Falha na extração do áudio.")
+                    st.error("Falha ao gerar análise.")
                     return
 
                 st.session_state["report"] = report
-                st.success("Análise concluída.")
+                st.success("Análise concluída e salva no histórico.")
 
     if "report" in st.session_state:
-        report = st.session_state["report"]
-        score_data = report["score_comunicacao"]
-
-        st.subheader("Score de comunicação")
-        st.metric("Pontuação geral", f"{score_data['score']}/100")
-        st.write(f"**Classificação:** {score_data['classificacao']}")
-        st.write(score_data["comentario"])
-
-        st.subheader("Transcrição")
-
-        show_markers = st.toggle("Exibir marcações na transcrição", value=False)
-
-        if show_markers:
-            st.caption("Legenda:")
-            st.caption("🔴 vício de linguagem")
-            st.caption("🟡 termo recorrente")
-
-            marked_text = highlight_transcription(
-                report["transcricao"],
-                report["repeticoes"]["termos_recorrentes"]
-            )
-            st.markdown(marked_text, unsafe_allow_html=True)
-        else:
-            st.write(report["transcricao"])
-
-        st.subheader("Análise global por IA")
-        analise_ia = report.get("analise_global_ia", {})
-
-        if analise_ia.get("disponivel"):
-            st.success(analise_ia.get("mensagem", ""))
-            st.write(analise_ia.get("analise", ""))
-        else:
-            st.info(analise_ia.get("mensagem", ""))
-
-        st.subheader("Pontos de atenção")
-        for ponto in report["pontos_atencao"]:
-            st.write(f"⚠️ {ponto}")
-
-        st.subheader("Vícios de linguagem")
-        if report["vicios_de_linguagem"]:
-            for termo, qtd in report["vicios_de_linguagem"].items():
-                st.write(f"🔹 {termo}: {qtd} ocorrência(s)")
-        else:
-            st.write("Nenhum vício de linguagem encontrado.")
-
-        st.subheader("Pausas")
-        pausas = report["pausas"]
-
-        st.write(f"⏱ Duração total: {pausas['duracao_total']}s")
-        st.write(f"🛑 Pausas longas: {pausas['quantidade_pausas_longas']}")
-        st.write(f"🔇 Tempo em silêncio: {pausas['tempo_total_silencio']}s")
-
-        if pausas["pausas_longas"]:
-            for p in pausas["pausas_longas"]:
-                st.write(
-                    f"- {round(p['start'], 2)}s → "
-                    f"{round(p['end'], 2)}s "
-                    f"({round(p['duration'], 2)}s)"
-                )
-        else:
-            st.write("Nenhuma pausa longa detectada.")
-
-        st.subheader("Repetições")
-        repeticoes = report["repeticoes"]
-
-        if repeticoes["sequenciais"]:
-            for r in repeticoes["sequenciais"]:
-                st.write(f"- {r['termo']}")
-        else:
-            st.write("Nenhuma repetição em sequência.")
-
-        if repeticoes["termos_recorrentes"]:
-            for termo, qtd in repeticoes["termos_recorrentes"].items():
-                st.write(f"- {termo}: {qtd}")
-        else:
-            st.write("Nenhum termo recorrente relevante.")
-
-        st.divider()
-
-        if st.button("Ver painel BI"):
-            st.session_state["page"] = "bi"
-            st.rerun()
-
-        docx_bytes = build_docx_report(
-            report,
-            video_name=st.session_state.get("video_path", "video_analisado")
-        )
-
-        st.download_button(
-            label="Baixar relatório em DOCX",
-            data=docx_bytes,
-            file_name="relatorio_analise_comunicacao.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
+        render_report_details(st.session_state["report"])
 
 
-def render_bi():
-    st.title("Painel BI")
+def render_history():
+    st.title("Histórico de Análises")
 
-    if "report" not in st.session_state:
-        st.warning("Nenhuma análise encontrada.")
+    avg_score = get_average_score()
+    stats = get_history_stats()
+
+    st.subheader("Aproveitamento geral")
+    render_score_circle(avg_score)
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("Análises feitas", stats["total_analyses"])
+
+    with col2:
+        st.metric("Melhor score", f"{stats['best_score']}/100")
+
+    with col3:
+        delta = stats["score_delta"]
+        st.metric("Evolução", f"{delta:+} pontos")
+
+    st.subheader("Evolução")
+    render_score_evolution_chart()
+
+    st.divider()
+
+    analyses = get_all_analyses()
+
+    if not analyses:
+        st.info("Nenhuma análise encontrada.")
         if st.button("Voltar"):
             st.session_state["page"] = "home"
             st.rerun()
         return
 
-    report = st.session_state["report"]
-    score_data = report["score_comunicacao"]
+    st.subheader("Análises realizadas")
 
-    if st.button("Voltar para tela inicial"):
+    for analysis in analyses:
+        analysis_id, title, score, created_at, ai_available = analysis
+
+        col1, col2, col3, col4 = st.columns([5, 2, 2, 2])
+
+        with col1:
+            if ai_available:
+                st.write(f"📄 {title}")
+            else:
+                st.write(f"⚠️ 📄 {title}")
+                st.caption("Análise feita sem IA. Resultados podem ser inconsistentes.")
+
+            st.caption(f"{created_at}")
+
+        with col2:
+            render_score_badge(score)
+
+        with col3:
+            if st.button("Abrir", key=f"open_{analysis_id}"):
+                st.session_state["selected_analysis"] = analysis_id
+                st.session_state["page"] = "detail"
+                st.rerun()
+
+        with col4:
+            if st.button("Descartar", key=f"delete_{analysis_id}"):
+                delete_analysis(analysis_id)
+
+                if st.session_state.get("selected_analysis") == analysis_id:
+                    del st.session_state["selected_analysis"]
+
+                st.success("Análise descartada.")
+                st.rerun()
+
+        st.divider()
+
+    if st.button("Voltar"):
         st.session_state["page"] = "home"
         st.rerun()
 
-    st.subheader("Score")
-    st.metric("Pontuação", f"{score_data['score']}/100")
 
-    pausas = report["pausas"]
-    repeticoes = report["repeticoes"]
+def render_detail():
+    selected_analysis = st.session_state.get("selected_analysis")
 
-    st.subheader("Análise global por IA")
-    analise_ia = report.get("analise_global_ia", {})
+    if not selected_analysis:
+        st.warning("Nenhuma análise selecionada.")
+        if st.button("Voltar"):
+            st.session_state["page"] = "history"
+            st.rerun()
+        return
 
-    if analise_ia.get("disponivel"):
-        st.success(analise_ia.get("mensagem", ""))
-        st.write(analise_ia.get("analise", ""))
-    else:
-        st.info(analise_ia.get("mensagem", ""))
+    report = get_analysis_by_id(selected_analysis)
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Pausas", pausas["quantidade_pausas_longas"])
-    col2.metric("Silêncio", f"{pausas['tempo_total_silencio']}s")
-    col3.metric("Repetições", len(repeticoes["termos_recorrentes"]))
+    if not report:
+        st.error("Essa análise não existe mais ou foi descartada.")
+        if st.button("Voltar"):
+            st.session_state["page"] = "history"
+            st.rerun()
+        return
 
-    st.subheader("Gráficos")
+    if st.button("Voltar"):
+        st.session_state["page"] = "history"
+        st.rerun()
 
-    if report["vicios_de_linguagem"]:
-        fig, ax = plt.subplots()
-        ax.bar(
-            list(report["vicios_de_linguagem"].keys()),
-            list(report["vicios_de_linguagem"].values())
-        )
-        st.pyplot(fig)
-
-    fig, ax = plt.subplots()
-    ax.pie(
-        [
-            pausas["duracao_total"] - pausas["tempo_total_silencio"],
-            pausas["tempo_total_silencio"],
-        ],
-        labels=["Fala", "Silêncio"],
-        autopct="%1.1f%%"
-    )
-    st.pyplot(fig)
+    render_report_details(report)
 
 
 if "page" not in st.session_state:
@@ -270,5 +368,7 @@ if "page" not in st.session_state:
 
 if st.session_state["page"] == "home":
     render_home()
-else:
-    render_bi()
+elif st.session_state["page"] == "history":
+    render_history()
+elif st.session_state["page"] == "detail":
+    render_detail()
