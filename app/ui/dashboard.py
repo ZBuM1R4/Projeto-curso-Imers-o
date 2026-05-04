@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 
 from app.database.db import (
+    DEFAULT_USER_ID,
     create_tables,
     delete_analysis,
     get_all_analyses,
@@ -13,6 +14,7 @@ from app.database.db import (
 )
 from app.services.attention_points_analyzer import generate_attention_points
 from app.services.audio_extractor import extract_audio
+from app.services.docx_exporter import build_docx_report
 from app.services.filler_word_analyzer import analyze_filler_words
 from app.services.gemini_full_context_analyzer import (
     analyze_full_transcription_with_gemini,
@@ -32,6 +34,8 @@ from app.utils.file_manager import save_uploaded_file
 st.set_page_config(page_title="Análise de Comunicação", layout="centered")
 
 create_tables()
+
+CURRENT_USER_ID = DEFAULT_USER_ID
 
 
 def get_score_color(score: float) -> str:
@@ -104,7 +108,7 @@ def render_score_badge(score: int):
 
 
 def render_score_evolution_chart():
-    history = get_score_history()
+    history = get_score_history(CURRENT_USER_ID)
 
     if len(history) < 2:
         st.info("Faça pelo menos duas análises para visualizar a evolução.")
@@ -167,12 +171,12 @@ def generate_report(video_path: str, audio_path: str):
 
     report["analise_global_ia"] = ai_full_analysis
 
-    save_analysis(report, video_path)
+    save_analysis(report, video_path, CURRENT_USER_ID)
 
     return report
 
 
-def render_report_details(report: dict):
+def render_report_details(report: dict, video_name: str = "video_analisado"):
     score_data = report["score_comunicacao"]
 
     st.subheader("Score de comunicação")
@@ -217,9 +221,73 @@ def render_report_details(report: dict):
     for ponto in report["pontos_atencao"]:
         st.write(f"⚠️ {ponto}")
 
+    st.subheader("Vícios de linguagem")
+    vicios = report.get("vicios_de_linguagem", {})
+
+    if vicios:
+        for termo, qtd in vicios.items():
+            st.write(f"🔹 {termo}: {qtd} ocorrência(s)")
+    else:
+        st.write("Nenhum vício de linguagem encontrado.")
+
+    st.subheader("Pausas")
+    pausas = report.get("pausas", {})
+
+    st.write(f"⏱ Duração total: {pausas.get('duracao_total', 0)}s")
+    st.write(f"🛑 Pausas longas: {pausas.get('quantidade_pausas_longas', 0)}")
+    st.write(f"🔇 Tempo em silêncio: {pausas.get('tempo_total_silencio', 0)}s")
+
+    pausas_longas = pausas.get("pausas_longas", [])
+
+    if pausas_longas:
+        st.write("Pausas detectadas:")
+        for pausa in pausas_longas:
+            st.write(
+                f"- {round(pausa['start'], 2)}s → "
+                f"{round(pausa['end'], 2)}s "
+                f"({round(pausa['duration'], 2)}s)"
+            )
+    else:
+        st.write("Nenhuma pausa longa detectada.")
+
+    st.subheader("Repetições")
+    repeticoes = report.get("repeticoes", {})
+
+    sequenciais = repeticoes.get("sequenciais", [])
+    termos_recorrentes = repeticoes.get("termos_recorrentes", {})
+
+    if sequenciais:
+        st.write("Repetições em sequência:")
+        for repeticao in sequenciais:
+            st.write(f"- {repeticao['termo']}")
+    else:
+        st.write("Nenhuma repetição em sequência.")
+
+    if termos_recorrentes:
+        st.write("Termos mais recorrentes:")
+        for termo, qtd in termos_recorrentes.items():
+            st.write(f"- {termo}: {qtd}")
+    else:
+        st.write("Nenhum termo recorrente relevante.")
+
+    st.divider()
+
+    docx_bytes = build_docx_report(
+        report,
+        video_name=video_name
+    )
+
+    st.download_button(
+        label="Baixar relatório em DOCX",
+        data=docx_bytes,
+        file_name="relatorio_analise_comunicacao.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
 
 def render_home():
     st.title("Análise de Comunicação por Vídeo")
+    st.caption(f"Usuário local atual: {CURRENT_USER_ID}")
 
     if st.button("Ver histórico de análises"):
         st.session_state["page"] = "history"
@@ -257,14 +325,18 @@ def render_home():
                 st.success("Análise concluída e salva no histórico.")
 
     if "report" in st.session_state:
-        render_report_details(st.session_state["report"])
+        render_report_details(
+            st.session_state["report"],
+            video_name=st.session_state.get("video_path", "video_analisado")
+        )
 
 
 def render_history():
     st.title("Histórico de Análises")
+    st.caption(f"Usuário local atual: {CURRENT_USER_ID}")
 
-    avg_score = get_average_score()
-    stats = get_history_stats()
+    avg_score = get_average_score(CURRENT_USER_ID)
+    stats = get_history_stats(CURRENT_USER_ID)
 
     st.subheader("Aproveitamento geral")
     render_score_circle(avg_score)
@@ -286,7 +358,7 @@ def render_history():
 
     st.divider()
 
-    analyses = get_all_analyses()
+    analyses = get_all_analyses(CURRENT_USER_ID)
 
     if not analyses:
         st.info("Nenhuma análise encontrada.")
@@ -322,7 +394,7 @@ def render_history():
 
         with col4:
             if st.button("Descartar", key=f"delete_{analysis_id}"):
-                delete_analysis(analysis_id)
+                delete_analysis(analysis_id, CURRENT_USER_ID)
 
                 if st.session_state.get("selected_analysis") == analysis_id:
                     del st.session_state["selected_analysis"]
@@ -347,7 +419,7 @@ def render_detail():
             st.rerun()
         return
 
-    report = get_analysis_by_id(selected_analysis)
+    report = get_analysis_by_id(selected_analysis, CURRENT_USER_ID)
 
     if not report:
         st.error("Essa análise não existe mais ou foi descartada.")
@@ -360,7 +432,7 @@ def render_detail():
         st.session_state["page"] = "history"
         st.rerun()
 
-    render_report_details(report)
+    render_report_details(report, video_name="analise_historico")
 
 
 if "page" not in st.session_state:

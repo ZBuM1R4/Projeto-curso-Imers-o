@@ -4,6 +4,7 @@ from pathlib import Path
 
 
 DB_PATH = Path("data/database.db")
+DEFAULT_USER_ID = "default_user"
 
 
 def get_connection():
@@ -18,6 +19,7 @@ def create_tables():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS analyses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT DEFAULT 'default_user',
         title TEXT,
         video_name TEXT,
         score INTEGER,
@@ -31,6 +33,12 @@ def create_tables():
     cursor.execute("PRAGMA table_info(analyses)")
     columns = [column[1] for column in cursor.fetchall()]
 
+    if "user_id" not in columns:
+        cursor.execute("""
+        ALTER TABLE analyses
+        ADD COLUMN user_id TEXT DEFAULT 'default_user'
+        """)
+
     if "ai_available" not in columns:
         cursor.execute("""
         ALTER TABLE analyses
@@ -41,7 +49,7 @@ def create_tables():
     conn.close()
 
 
-def save_analysis(report: dict, video_path: str):
+def save_analysis(report: dict, video_path: str, user_id: str = DEFAULT_USER_ID):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -54,10 +62,12 @@ def save_analysis(report: dict, video_path: str):
     cursor.execute("""
     DELETE FROM analyses
     WHERE video_name = ?
-    """, (video_path,))
+    AND user_id = ?
+    """, (video_path, user_id))
 
     cursor.execute("""
     INSERT INTO analyses (
+        user_id,
         title,
         video_name,
         score,
@@ -65,8 +75,9 @@ def save_analysis(report: dict, video_path: str):
         report_json,
         ai_available
     )
-    VALUES (?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
+        user_id,
         title,
         video_path,
         score,
@@ -79,15 +90,16 @@ def save_analysis(report: dict, video_path: str):
     conn.close()
 
 
-def get_all_analyses():
+def get_all_analyses(user_id: str = DEFAULT_USER_ID):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
     SELECT id, title, score, created_at, ai_available
     FROM analyses
+    WHERE user_id = ?
     ORDER BY created_at DESC
-    """)
+    """, (user_id,))
 
     rows = cursor.fetchall()
     conn.close()
@@ -95,7 +107,7 @@ def get_all_analyses():
     return rows
 
 
-def get_analysis_by_id(analysis_id: int):
+def get_analysis_by_id(analysis_id: int, user_id: str = DEFAULT_USER_ID):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -103,7 +115,8 @@ def get_analysis_by_id(analysis_id: int):
     SELECT report_json
     FROM analyses
     WHERE id = ?
-    """, (analysis_id,))
+    AND user_id = ?
+    """, (analysis_id, user_id))
 
     row = cursor.fetchone()
     conn.close()
@@ -114,27 +127,29 @@ def get_analysis_by_id(analysis_id: int):
     return json.loads(row[0])
 
 
-def delete_analysis(analysis_id: int):
+def delete_analysis(analysis_id: int, user_id: str = DEFAULT_USER_ID):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
     DELETE FROM analyses
     WHERE id = ?
-    """, (analysis_id,))
+    AND user_id = ?
+    """, (analysis_id, user_id))
 
     conn.commit()
     conn.close()
 
 
-def get_average_score():
+def get_average_score(user_id: str = DEFAULT_USER_ID):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
     SELECT AVG(score)
     FROM analyses
-    """)
+    WHERE user_id = ?
+    """, (user_id,))
 
     result = cursor.fetchone()[0]
     conn.close()
@@ -142,15 +157,16 @@ def get_average_score():
     return round(result, 2) if result else 0
 
 
-def get_score_history():
+def get_score_history(user_id: str = DEFAULT_USER_ID):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
     SELECT title, score, created_at
     FROM analyses
+    WHERE user_id = ?
     ORDER BY created_at ASC
-    """)
+    """, (user_id,))
 
     rows = cursor.fetchall()
     conn.close()
@@ -158,8 +174,8 @@ def get_score_history():
     return rows
 
 
-def get_history_stats():
-    history = get_score_history()
+def get_history_stats(user_id: str = DEFAULT_USER_ID):
+    history = get_score_history(user_id)
 
     if not history:
         return {
