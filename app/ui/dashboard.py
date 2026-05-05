@@ -1,16 +1,14 @@
 import matplotlib.pyplot as plt
 import streamlit as st
 
-from app.database.db import (
-    DEFAULT_USER_ID,
-    create_tables,
-    delete_analysis,
-    get_all_analyses,
-    get_analysis_by_id,
-    get_average_score,
-    get_history_stats,
-    get_score_history,
-    save_analysis,
+from app.database.supabase_db import (
+    delete_analysis_supabase,
+    get_all_analyses_supabase,
+    get_analysis_by_id_supabase,
+    get_average_score_supabase,
+    get_history_stats_supabase,
+    get_score_history_supabase,
+    save_analysis_supabase,
 )
 from app.services.attention_points_analyzer import generate_attention_points
 from app.services.audio_extractor import extract_audio
@@ -26,6 +24,7 @@ from app.services.repetition_analyzer import (
     analyze_sequential_repetitions,
 )
 from app.services.score_analyzer import calculate_communication_score
+from app.services.supabase_client import get_supabase_client
 from app.services.transcriber import transcribe_audio
 from app.services.transcription_marker import highlight_transcription
 from app.utils.file_manager import save_uploaded_file
@@ -33,9 +32,69 @@ from app.utils.file_manager import save_uploaded_file
 
 st.set_page_config(page_title="Análise de Comunicação", layout="centered")
 
-create_tables()
+supabase = get_supabase_client()
 
-CURRENT_USER_ID = DEFAULT_USER_ID
+
+def render_login():
+    st.title("Análise de Comunicação")
+    st.subheader("Acesse sua conta")
+
+    tab_login, tab_signup = st.tabs(["Entrar", "Criar conta"])
+
+    with tab_login:
+        with st.form("login_form"):
+            email = st.text_input("Email")
+            password = st.text_input("Senha", type="password")
+            submitted = st.form_submit_button("Entrar")
+
+            if submitted:
+                try:
+                    response = supabase.auth.sign_in_with_password({
+                        "email": email,
+                        "password": password
+                    })
+
+                    st.session_state["user"] = response.user
+                    st.session_state["access_token"] = response.session.access_token
+
+                    st.success("Login realizado com sucesso!")
+                    st.rerun()
+
+                except Exception as e:
+                    st.error(f"Erro no login: {str(e)}")
+
+    with tab_signup:
+        with st.form("signup_form"):
+            email = st.text_input("Email", key="signup_email")
+            password = st.text_input("Senha", type="password", key="signup_password")
+            submitted = st.form_submit_button("Criar conta")
+
+            if submitted:
+                try:
+                    supabase.auth.sign_up({
+                        "email": email,
+                        "password": password
+                    })
+
+                    st.success("Conta criada com sucesso! Agora faça login.")
+
+                except Exception as e:
+                    st.error(f"Erro ao criar conta: {str(e)}")
+
+
+def render_logout():
+    if st.button("Logout"):
+        st.session_state.clear()
+        st.rerun()
+
+
+def get_current_user_id():
+    user = st.session_state.get("user")
+    return user.id if user else None
+
+
+def get_access_token():
+    return st.session_state.get("access_token")
 
 
 def get_score_color(score: float) -> str:
@@ -96,8 +155,8 @@ def render_score_badge(score: int):
             padding: 8px 12px;
             border-radius: 10px;
             text-align: center;
-            font-weight: bold;
             color: white;
+            font-weight: bold;
             min-width: 80px;
         ">
             {score}/100
@@ -107,8 +166,23 @@ def render_score_badge(score: int):
     )
 
 
-def render_score_evolution_chart():
-    history = get_score_history(CURRENT_USER_ID)
+def render_analysis_title(title: str, ai_available: bool):
+    if ai_available:
+        st.write(f"📄 {title}")
+    else:
+        st.write(f"⚠️ 📄 {title}")
+        st.caption("Análise feita sem IA. Resultados podem ser inconsistentes.")
+
+
+def render_ai_warning():
+    st.warning(
+        "⚠️ Esta análise foi gerada sem a avaliação da IA. "
+        "Os resultados podem apresentar inconsistências."
+    )
+
+
+def render_score_evolution_chart(user_id: str, access_token: str):
+    history = get_score_history_supabase(user_id, access_token)
 
     if len(history) < 2:
         st.info("Faça pelo menos duas análises para visualizar a evolução.")
@@ -127,7 +201,12 @@ def render_score_evolution_chart():
     st.pyplot(fig)
 
 
-def generate_report(video_path: str, audio_path: str):
+def generate_report(
+    video_path: str,
+    audio_path: str,
+    user_id: str,
+    access_token: str
+):
     extracted_audio = extract_audio(video_path, audio_path)
 
     if not extracted_audio:
@@ -171,7 +250,7 @@ def generate_report(video_path: str, audio_path: str):
 
     report["analise_global_ia"] = ai_full_analysis
 
-    save_analysis(report, video_path, CURRENT_USER_ID)
+    save_analysis_supabase(report, video_path, user_id, access_token)
 
     return report
 
@@ -187,10 +266,7 @@ def render_report_details(report: dict, video_name: str = "video_analisado"):
     analise_ia = report.get("analise_global_ia", {})
 
     if not analise_ia.get("disponivel", False):
-        st.warning(
-            "⚠️ Esta análise foi gerada sem a avaliação da IA. "
-            "Os resultados podem apresentar inconsistências."
-        )
+        render_ai_warning()
 
     st.subheader("Transcrição")
 
@@ -285,9 +361,10 @@ def render_report_details(report: dict, video_name: str = "video_analisado"):
     )
 
 
-def render_home():
+def render_home(user_id: str, access_token: str):
     st.title("Análise de Comunicação por Vídeo")
-    st.caption(f"Usuário local atual: {CURRENT_USER_ID}")
+
+    render_logout()
 
     if st.button("Ver histórico de análises"):
         st.session_state["page"] = "history"
@@ -307,14 +384,17 @@ def render_home():
         st.session_state["video_path"] = video_path
         st.session_state["audio_path"] = audio_path
 
-    if "video_path" in st.session_state:
-        st.video(st.session_state["video_path"])
+        st.subheader("Pré-visualização do vídeo")
+        st.video(video_path)
 
+    if "video_path" in st.session_state and "audio_path" in st.session_state:
         if st.button("Analisar vídeo"):
             with st.spinner("Processando vídeo..."):
                 report = generate_report(
                     st.session_state["video_path"],
-                    st.session_state["audio_path"]
+                    st.session_state["audio_path"],
+                    user_id,
+                    access_token
                 )
 
                 if not report:
@@ -331,12 +411,11 @@ def render_home():
         )
 
 
-def render_history():
+def render_history(user_id: str, access_token: str):
     st.title("Histórico de Análises")
-    st.caption(f"Usuário local atual: {CURRENT_USER_ID}")
 
-    avg_score = get_average_score(CURRENT_USER_ID)
-    stats = get_history_stats(CURRENT_USER_ID)
+    avg_score = get_average_score_supabase(user_id, access_token)
+    stats = get_history_stats_supabase(user_id, access_token)
 
     st.subheader("Aproveitamento geral")
     render_score_circle(avg_score)
@@ -354,11 +433,11 @@ def render_history():
         st.metric("Evolução", f"{delta:+} pontos")
 
     st.subheader("Evolução")
-    render_score_evolution_chart()
+    render_score_evolution_chart(user_id, access_token)
 
     st.divider()
 
-    analyses = get_all_analyses(CURRENT_USER_ID)
+    analyses = get_all_analyses_supabase(user_id, access_token)
 
     if not analyses:
         st.info("Nenhuma análise encontrada.")
@@ -370,18 +449,17 @@ def render_history():
     st.subheader("Análises realizadas")
 
     for analysis in analyses:
-        analysis_id, title, score, created_at, ai_available = analysis
+        analysis_id = analysis["id"]
+        title = analysis["title"]
+        score = analysis["score"]
+        created_at = analysis["created_at"]
+        ai_available = analysis["ai_available"]
 
         col1, col2, col3, col4 = st.columns([5, 2, 2, 2])
 
         with col1:
-            if ai_available:
-                st.write(f"📄 {title}")
-            else:
-                st.write(f"⚠️ 📄 {title}")
-                st.caption("Análise feita sem IA. Resultados podem ser inconsistentes.")
-
-            st.caption(f"{created_at}")
+            render_analysis_title(title, ai_available)
+            st.caption(created_at)
 
         with col2:
             render_score_badge(score)
@@ -394,7 +472,7 @@ def render_history():
 
         with col4:
             if st.button("Descartar", key=f"delete_{analysis_id}"):
-                delete_analysis(analysis_id, CURRENT_USER_ID)
+                delete_analysis_supabase(analysis_id, user_id, access_token)
 
                 if st.session_state.get("selected_analysis") == analysis_id:
                     del st.session_state["selected_analysis"]
@@ -409,7 +487,7 @@ def render_history():
         st.rerun()
 
 
-def render_detail():
+def render_detail(user_id: str, access_token: str):
     selected_analysis = st.session_state.get("selected_analysis")
 
     if not selected_analysis:
@@ -419,10 +497,14 @@ def render_detail():
             st.rerun()
         return
 
-    report = get_analysis_by_id(selected_analysis, CURRENT_USER_ID)
+    report = get_analysis_by_id_supabase(
+        selected_analysis,
+        user_id,
+        access_token
+    )
 
     if not report:
-        st.error("Essa análise não existe mais ou foi descartada.")
+        st.error("Análise não encontrada.")
         if st.button("Voltar"):
             st.session_state["page"] = "history"
             st.rerun()
@@ -435,12 +517,18 @@ def render_detail():
     render_report_details(report, video_name="analise_historico")
 
 
-if "page" not in st.session_state:
-    st.session_state["page"] = "home"
+user_id = get_current_user_id()
+access_token = get_access_token()
 
-if st.session_state["page"] == "home":
-    render_home()
-elif st.session_state["page"] == "history":
-    render_history()
-elif st.session_state["page"] == "detail":
-    render_detail()
+if not user_id or not access_token:
+    render_login()
+else:
+    if "page" not in st.session_state:
+        st.session_state["page"] = "home"
+
+    if st.session_state["page"] == "home":
+        render_home(user_id, access_token)
+    elif st.session_state["page"] == "history":
+        render_history(user_id, access_token)
+    elif st.session_state["page"] == "detail":
+        render_detail(user_id, access_token)
