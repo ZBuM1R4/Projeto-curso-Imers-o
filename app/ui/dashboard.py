@@ -145,27 +145,42 @@ st.markdown(
         .brand-wrap {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 2.2rem;
+            gap: 14px;
+            margin-bottom: 2.4rem;
+            padding: 0.2rem 0.1rem;
         }
 
         .brand-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #4f7cff, #7c3aed);
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background:
+                radial-gradient(circle at 30% 20%, rgba(255,255,255,0.30), transparent 24%),
+                linear-gradient(135deg, #4f7cff 0%, #7c3aed 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 34px rgba(99, 102, 241, 0.32);
-            font-size: 20px;
+            box-shadow:
+                0 0 28px rgba(99, 102, 241, 0.42),
+                inset 0 0 12px rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
         }
 
         .brand-title {
-            font-size: 1.08rem;
-            font-weight: 800;
+            font-size: 1.05rem;
+            font-weight: 850;
             line-height: 1.08;
+            letter-spacing: -0.035em;
             color: #f8fafc;
+        }
+
+        .brand-subtitle {
+            color: #94a3b8;
+            font-size: 0.78rem;
+            margin-top: 0.2rem;
         }
 
         .sidebar-profile-card {
@@ -431,6 +446,137 @@ st.markdown(
             .chart-art {
                 opacity: 0.35;
             }
+        }
+        .custom-upload-card {
+            min-height: 360px;
+            border-radius: 26px;
+            border: 1px solid rgba(99, 102, 241, 0.48);
+            background:
+                radial-gradient(circle at 50% 12%, rgba(79, 124, 255, 0.20), transparent 35%),
+                linear-gradient(135deg, rgba(18, 24, 38, 0.92), rgba(18, 24, 38, 0.58));
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.02) inset,
+                0 24px 80px rgba(0, 0, 0, 0.25);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .custom-upload-inner {
+            min-height: 315px;
+            border: 1px dashed rgba(148, 163, 184, 0.22);
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .custom-card-icon {
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, rgba(79, 124, 255, 0.34), rgba(79, 124, 255, 0.08));
+            border: 1px solid rgba(99, 102, 241, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.35rem;
+            margin-bottom: 0.7rem;
+            box-shadow: 0 0 34px rgba(79, 124, 255, 0.18);
+        }
+
+        .custom-card-title {
+            font-size: 1.45rem;
+            font-weight: 850;
+            color: #f8fafc;
+            letter-spacing: -0.035em;
+        }
+
+        .custom-card-text {
+            max-width: 520px;
+            color: #aab4c4;
+            line-height: 1.65;
+            font-size: 1rem;
+        }
+
+        .custom-card-note {
+            color: #7d8798;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .custom-history-card {
+            position: relative;
+            min-height: 360px;
+            overflow: hidden;
+            border-radius: 26px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background:
+                radial-gradient(circle at 85% 20%, rgba(124, 58, 237, 0.24), transparent 30%),
+                linear-gradient(135deg, rgba(18, 24, 38, 0.86), rgba(18, 24, 38, 0.52));
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .custom-chart-line {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 72%;
+            opacity: 0.72;
+            pointer-events: none;
+        }
+
+        .home-action-card {
+            min-height: 310px;
+            border-radius: 26px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background:
+                radial-gradient(circle at 50% 10%, rgba(79, 124, 255, 0.16), transparent 35%),
+                linear-gradient(135deg, rgba(18, 24, 38, 0.90), rgba(18, 24, 38, 0.58));
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .home-action-icon {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, rgba(79, 124, 255, 0.34), rgba(79, 124, 255, 0.08));
+            border: 1px solid rgba(99, 102, 241, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.25rem;
+            margin: 0 auto 1.2rem auto;
+        }
+
+        .home-action-title {
+            font-size: 1.45rem;
+            font-weight: 850;
+            color: #f8fafc;
+            margin-bottom: 0.7rem;
+        }
+
+        .home-action-text {
+            color: #aab4c4;
+            line-height: 1.65;
+            margin-bottom: 0.8rem;
+        }
+
+        .home-action-note {
+            color: #7d8798;
+            font-size: 0.9rem;
+        }
+
+        .result-video-card {
+            max-width: 760px;
         }
     </style>
     """,
@@ -728,7 +874,10 @@ def render_sidebar(user_id: str, access_token: str):
             """
             <div class="brand-wrap">
                 <div class="brand-icon">AI</div>
-                <div class="brand-title">Análise de<br>Comunicação</div>
+                <div>
+                    <div class="brand-title">Análise de<br>Comunicação</div>
+                    <div class="brand-subtitle">Oratória com IA</div>
+                </div>
             </div>
             """,
             unsafe_allow_html=True
@@ -1088,7 +1237,7 @@ def render_home(user_id: str, access_token: str):
 
         <div class="hero-description">
             Envie um vídeo da sua oratória e receba uma análise completa com
-            transcrição, hábitos de linguagem, pausas, repetições, pontos de atenção
+            transcrição, organização da fala, pausas, repetições, pontos de atenção
             e uma avaliação geral por inteligência artificial.
         </div>
         """,
@@ -1099,37 +1248,63 @@ def render_home(user_id: str, access_token: str):
 
     with col_analysis:
         with st.container(border=True):
-            st.markdown("### ☁️ Iniciar uma nova análise")
-            st.write(
-                "Comece uma nova avaliação enviando um vídeo da sua apresentação "
-                "ou fala para análise."
+            st.markdown(
+                """
+                <div class="home-action-card">
+                    <div class="home-action-icon">☁️</div>
+                    <div class="home-action-title">Iniciar uma nova análise</div>
+                    <div class="home-action-text">
+                        Envie um vídeo da sua apresentação ou fala para receber
+                        um feedback estruturado sobre sua comunicação.
+                    </div>
+                    <div class="home-action-note">
+                        Formatos aceitos: MP4, MOV, AVI, MKV · Até 2GB
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
-            st.caption("Formatos aceitos: MP4, MOV, AVI, MKV • Até 2GB")
+            col_a, col_b, col_c = st.columns([1, 1.4, 1])
 
-            if st.button("Iniciar análise"):
-                st.session_state["page"] = "analysis"
-                st.session_state.pop("report", None)
-                st.session_state.pop("video_path", None)
-                st.session_state.pop("audio_path", None)
-                st.session_state.pop("uploaded_file_name", None)
-                st.rerun()
+            with col_b:
+                if st.button("Iniciar análise", use_container_width=True):
+                    st.session_state["page"] = "analysis"
+                    st.session_state.pop("report", None)
+                    st.session_state.pop("video_path", None)
+                    st.session_state.pop("audio_path", None)
+                    st.session_state.pop("uploaded_file_name", None)
+                    st.rerun()
 
     with col_history:
         with st.container(border=True):
-            st.markdown("### 📈 Acompanhe sua evolução")
-            st.write(
-                "Veja análises anteriores, scores e sua evolução "
-                "ao longo do tempo."
+            st.markdown(
+                """
+                <div class="home-action-card">
+                    <div class="home-action-icon">📈</div>
+                    <div class="home-action-title">Acompanhe sua evolução</div>
+                    <div class="home-action-text">
+                        Veja análises anteriores, acompanhe seus scores e observe
+                        sua evolução ao longo do tempo.
+                    </div>
+                    <div class="home-action-note">
+                        Histórico organizado por análise e desempenho.
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
-            if st.button("Ver histórico"):
-                if not has_network_connection():
-                    st.error("Erro, verifique sua conexão com a rede.")
-                    return
+            col_a, col_b, col_c = st.columns([1, 1.4, 1])
 
-                st.session_state["page"] = "history"
-                st.rerun()
+            with col_b:
+                if st.button("Ver histórico", use_container_width=True):
+                    if not has_network_connection():
+                        st.error("Erro, verifique sua conexão com a rede.")
+                        return
+
+                    st.session_state["page"] = "history"
+                    st.rerun()
 
     st.markdown(
         """
@@ -1155,10 +1330,14 @@ def render_analysis(user_id: str, access_token: str):
         video_path = st.session_state.get("video_path")
 
         if video_path:
+            st.markdown('<div class="result-video-card">', unsafe_allow_html=True)
+
             with st.container(border=True):
                 st.subheader("Vídeo analisado")
                 st.caption("Arquivo utilizado para gerar esta análise.")
                 st.video(video_path)
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
         st.divider()
 
@@ -1169,12 +1348,26 @@ def render_analysis(user_id: str, access_token: str):
 
         st.divider()
 
-        if st.button("Iniciar nova análise"):
-            st.session_state.pop("report", None)
-            st.session_state.pop("video_path", None)
-            st.session_state.pop("audio_path", None)
-            st.session_state.pop("uploaded_file_name", None)
-            st.rerun()
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            if st.button("Voltar ao início", use_container_width=True):
+                st.session_state["page"] = "home"
+                st.rerun()
+
+        with col2:
+            if st.button("Acompanhe sua evolução", use_container_width=True):
+                st.session_state["page"] = "history"
+                st.rerun()
+
+        with col3:
+            if st.button("Iniciar nova análise", use_container_width=True):
+                st.session_state.pop("report", None)
+                st.session_state.pop("video_path", None)
+                st.session_state.pop("audio_path", None)
+                st.session_state.pop("uploaded_file_name", None)
+                st.session_state["page"] = "analysis"
+                st.rerun()
 
         return
 
@@ -1215,7 +1408,10 @@ def render_analysis(user_id: str, access_token: str):
             st.markdown("### Pré-visualização do vídeo")
             st.caption("Confira se o arquivo enviado está correto antes de analisar.")
 
-            st.video(st.session_state["video_path"])
+            preview_col, _ = st.columns([0.72, 0.28])
+
+            with preview_col:
+                st.video(st.session_state["video_path"])
 
             if st.button("Analisar vídeo"):
                 with st.spinner("Processando vídeo..."):
