@@ -1,15 +1,19 @@
 import base64
+from datetime import datetime, timezone
 from pathlib import Path
 
 import streamlit as st
 
 from app.database.profile_db import get_profile, profile_exists, save_profile
 from app.database.supabase_db import (
+    MONTHLY_ANALYSIS_LIMIT,
+    can_create_analysis_supabase,
     delete_analysis_supabase,
     get_all_analyses_supabase,
     get_analysis_by_id_supabase,
     get_average_score_supabase,
     get_history_stats_supabase,
+    get_remaining_monthly_analyses_supabase,
     save_analysis_supabase,
 )
 from app.services.attention_points_analyzer import generate_attention_points
@@ -29,7 +33,6 @@ from app.services.repetition_analyzer import (
 from app.services.score_analyzer import calculate_communication_score
 from app.services.supabase_client import get_supabase_client
 from app.services.transcriber import transcribe_audio
-from app.services.transcription_marker import highlight_transcription
 from app.utils.file_manager import save_uploaded_file
 from app.utils.validators import get_password_rules_message, is_valid_password
 
@@ -944,6 +947,24 @@ def get_access_token():
     return st.session_state.get("access_token")
 
 
+def get_days_until_expiration(expires_at: str) -> int:
+    if not expires_at:
+        return 0
+
+    try:
+        expires_datetime = datetime.fromisoformat(
+            expires_at.replace("Z", "+00:00")
+        )
+
+        now = datetime.now(timezone.utc)
+        remaining_time = expires_datetime - now
+
+        return max(remaining_time.days + 1, 0)
+
+    except Exception:
+        return 0
+
+
 def get_score_color(score: float) -> str:
     if score == 0:
         return "#d9d9d9"
@@ -1102,20 +1123,7 @@ def render_report_details(report: dict, video_name: str = "video_analisado"):
         render_ai_warning()
 
     st.subheader("Transcrição")
-
-    show_markers = st.toggle("Exibir marcações na transcrição", value=False)
-
-    if show_markers:
-        st.caption("Legenda:")
-        st.caption("🟡 termo recorrente")
-
-        marked_text = highlight_transcription(
-            report["transcricao"],
-            report["repeticoes"]["termos_recorrentes"]
-        )
-        st.markdown(marked_text, unsafe_allow_html=True)
-    else:
-        st.write(report["transcricao"])
+    st.write(report["transcricao"])
 
     st.subheader("Análise global por IA")
     st.write(analise_ia.get("analise", ""))
@@ -1378,6 +1386,34 @@ def render_analysis(user_id: str, access_token: str):
         "Após o envio, confira a pré-visualização antes de processar."
     )
 
+    if not has_network_connection():
+        st.error("Erro, verifique sua conexão com a rede.")
+        render_back_to_home_button()
+        return
+
+    try:
+        remaining_analyses = get_remaining_monthly_analyses_supabase(
+            user_id,
+            access_token
+        )
+    except Exception:
+        st.error("Erro, verifique sua conexão com a rede.")
+        render_back_to_home_button()
+        return
+
+    st.info(
+        f"Você possui {remaining_analyses} de "
+        f"{MONTHLY_ANALYSIS_LIMIT} análises disponíveis neste mês."
+    )
+
+    if remaining_analyses <= 0:
+        st.warning(
+            f"Você atingiu o limite mensal de {MONTHLY_ANALYSIS_LIMIT} análises. "
+            "Tente novamente no próximo mês ou entre em contato com a equipe."
+        )
+        render_back_to_home_button()
+        return
+
     with st.container(border=True):
         st.markdown("### Enviar vídeo")
 
@@ -1414,6 +1450,22 @@ def render_analysis(user_id: str, access_token: str):
                 st.video(st.session_state["video_path"])
 
             if st.button("Analisar vídeo"):
+                try:
+                    can_create_analysis = can_create_analysis_supabase(
+                        user_id,
+                        access_token
+                    )
+                except Exception:
+                    st.error("Erro, verifique sua conexão com a rede.")
+                    return
+
+                if not can_create_analysis:
+                    st.warning(
+                        f"Você atingiu o limite mensal de {MONTHLY_ANALYSIS_LIMIT} análises. "
+                        "Tente novamente no próximo mês ou entre em contato com a equipe."
+                    )
+                    return
+
                 with st.spinner("Processando vídeo..."):
                     report = generate_report(
                         st.session_state["video_path"],
@@ -1442,18 +1494,33 @@ def render_history(user_id: str, access_token: str):
     avg_score = get_average_score_supabase(user_id, access_token)
     stats = get_history_stats_supabase(user_id, access_token)
 
+    try:
+        remaining_analyses = get_remaining_monthly_analyses_supabase(
+            user_id,
+            access_token
+        )
+    except Exception:
+        st.error("Erro, verifique sua conexão com a rede.")
+        return
+
     st.subheader("Aproveitamento geral")
     render_score_circle(avg_score)
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         st.metric("Análises feitas", stats["total_analyses"])
 
     with col2:
-        st.metric("Melhor score", f"{stats['best_score']}/100")
+        st.metric(
+            "Análises restantes",
+            f"{remaining_analyses}/{MONTHLY_ANALYSIS_LIMIT}"
+        )
 
     with col3:
+        st.metric("Melhor score", f"{stats['best_score']}/100")
+
+    with col4:
         delta = stats["score_delta"]
         st.metric("Evolução", f"{delta:+} pontos")
 
@@ -1474,23 +1541,32 @@ def render_history(user_id: str, access_token: str):
         score = analysis["score"]
         created_at = analysis["created_at"]
         ai_available = analysis["ai_available"]
+        expires_at = analysis.get("expires_at")
 
-        col1, col2, col3, col4 = st.columns([5, 2, 2, 2])
+        days_remaining = get_days_until_expiration(expires_at)
+
+        col1, col2, col3, col4, col5 = st.columns([4, 1.5, 2, 1.5, 1.5])
 
         with col1:
             render_analysis_title(title, ai_available)
-            st.caption(created_at)
+            st.caption(f"Criada em: {created_at}")
 
         with col2:
             render_score_badge(score)
 
         with col3:
+            if days_remaining <= 1:
+                st.caption("Expira em até 1 dia")
+            else:
+                st.caption(f"Expira em {days_remaining} dias")
+
+        with col4:
             if st.button("Abrir", key=f"open_{analysis_id}"):
                 st.session_state["selected_analysis"] = analysis_id
                 st.session_state["page"] = "detail"
                 st.rerun()
 
-        with col4:
+        with col5:
             if st.button("Descartar", key=f"delete_{analysis_id}"):
                 try:
                     delete_analysis_supabase(analysis_id, user_id, access_token)

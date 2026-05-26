@@ -1,10 +1,85 @@
+from datetime import datetime, timedelta, timezone
+
 from app.services.supabase_client import get_supabase_client
+
+
+MONTHLY_ANALYSIS_LIMIT = 30
+ANALYSIS_EXPIRATION_DAYS = 15
 
 
 def get_authenticated_client(access_token: str):
     client = get_supabase_client()
     client.postgrest.auth(access_token)
     return client
+
+
+def get_current_utc_datetime() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def get_iso_datetime(value: datetime) -> str:
+    return value.isoformat()
+
+
+def get_month_range() -> tuple[str, str]:
+    now = get_current_utc_datetime()
+
+    start_of_month = now.replace(
+        day=1,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
+    if start_of_month.month == 12:
+        start_of_next_month = start_of_month.replace(
+            year=start_of_month.year + 1,
+            month=1
+        )
+    else:
+        start_of_next_month = start_of_month.replace(
+            month=start_of_month.month + 1
+        )
+
+    return (
+        get_iso_datetime(start_of_month),
+        get_iso_datetime(start_of_next_month)
+    )
+
+
+def count_monthly_analyses_supabase(user_id: str, access_token: str) -> int:
+    supabase = get_authenticated_client(access_token)
+
+    start_of_month, start_of_next_month = get_month_range()
+
+    response = (
+        supabase
+        .table("analyses")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .gte("created_at", start_of_month)
+        .lt("created_at", start_of_next_month)
+        .execute()
+    )
+
+    return response.count or 0
+
+
+def get_remaining_monthly_analyses_supabase(
+    user_id: str,
+    access_token: str
+) -> int:
+    used = count_monthly_analyses_supabase(user_id, access_token)
+    remaining = MONTHLY_ANALYSIS_LIMIT - used
+
+    return max(remaining, 0)
+
+
+def can_create_analysis_supabase(user_id: str, access_token: str) -> bool:
+    used = count_monthly_analyses_supabase(user_id, access_token)
+
+    return used < MONTHLY_ANALYSIS_LIMIT
 
 
 def save_analysis_supabase(
@@ -19,11 +94,8 @@ def save_analysis_supabase(
     score = report["score_comunicacao"]["score"]
     ai_available = report.get("analise_global_ia", {}).get("disponivel", False)
 
-    supabase.table("analyses") \
-        .delete() \
-        .eq("user_id", user_id) \
-        .eq("video_name", video_path) \
-        .execute()
+    now = get_current_utc_datetime()
+    expires_at = now + timedelta(days=ANALYSIS_EXPIRATION_DAYS)
 
     data = {
         "user_id": user_id,
@@ -33,6 +105,8 @@ def save_analysis_supabase(
         "transcription": report["transcricao"],
         "report_json": report,
         "ai_available": ai_available,
+        "expires_at": get_iso_datetime(expires_at),
+        "status": "active",
     }
 
     supabase.table("analyses").insert(data).execute()
@@ -41,11 +115,15 @@ def save_analysis_supabase(
 def get_all_analyses_supabase(user_id: str, access_token: str):
     supabase = get_authenticated_client(access_token)
 
+    now = get_iso_datetime(get_current_utc_datetime())
+
     response = (
         supabase
         .table("analyses")
         .select("*")
         .eq("user_id", user_id)
+        .eq("status", "active")
+        .gt("expires_at", now)
         .order("created_at", desc=True)
         .execute()
     )
@@ -60,12 +138,16 @@ def get_analysis_by_id_supabase(
 ):
     supabase = get_authenticated_client(access_token)
 
+    now = get_iso_datetime(get_current_utc_datetime())
+
     response = (
         supabase
         .table("analyses")
         .select("*")
         .eq("id", analysis_id)
         .eq("user_id", user_id)
+        .eq("status", "active")
+        .gt("expires_at", now)
         .single()
         .execute()
     )
@@ -86,7 +168,7 @@ def delete_analysis_supabase(
     (
         supabase
         .table("analyses")
-        .delete()
+        .update({"status": "deleted"})
         .eq("id", analysis_id)
         .eq("user_id", user_id)
         .execute()
