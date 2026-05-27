@@ -33,3 +33,13 @@ Thumbs.db
 *.avi
 *.mkv
 *.wav
+
+# Arquivos temporários do sistema
+data/input/*
+data/temp/*
+data/profile_images/*
+
+# Mantém as pastas no projeto
+!data/input/.gitkeep
+!data/temp/.gitkeep
+!data/profile_images/.gitkeep
