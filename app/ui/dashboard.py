@@ -33,6 +33,7 @@ from app.services.repetition_analyzer import (
 from app.services.score_analyzer import calculate_communication_score
 from app.services.supabase_client import get_supabase_client
 from app.services.transcriber import transcribe_audio
+from app.services.temp_file_cleaner import clean_temp_files
 from app.utils.file_manager import save_uploaded_file
 from app.utils.validators import get_password_rules_message, is_valid_password
 
@@ -742,6 +743,8 @@ def render_login():
                         "password": password
                     })
 
+                    clean_temp_files()
+
                     st.session_state["user"] = response.user
                     st.session_state["access_token"] = response.session.access_token
                     st.success("Login realizado com sucesso!")
@@ -784,6 +787,9 @@ def render_login():
                     })
 
                     if response.session:
+
+                        clean_temp_files()
+
                         st.session_state["user"] = response.user
                         st.session_state["access_token"] = response.session.access_token
                         st.success("Conta criada com sucesso! Complete seu cadastro.")
@@ -800,6 +806,7 @@ def render_complete_profile(user_id: str, access_token: str):
     st.write("Antes de continuar, preencha suas informações pessoais.")
 
     if st.button("Logout"):
+        clean_temp_files()
         st.session_state.clear()
         st.rerun()
 
@@ -905,6 +912,8 @@ def render_sidebar(user_id: str, access_token: str):
             st.rerun()
 
         if st.button("Análise"):
+            clean_temp_files()
+
             st.session_state["page"] = "analysis"
             st.session_state.pop("report", None)
             st.session_state.pop("video_path", None)
@@ -926,6 +935,7 @@ def render_sidebar(user_id: str, access_token: str):
         )
 
         if st.button("Sair da conta"):
+            clean_temp_files()
             st.session_state.clear()
             st.rerun()
 
@@ -1277,6 +1287,8 @@ def render_home(user_id: str, access_token: str):
 
             with col_b:
                 if st.button("Iniciar análise", use_container_width=True):
+                    clean_temp_files()
+
                     st.session_state["page"] = "analysis"
                     st.session_state.pop("report", None)
                     st.session_state.pop("video_path", None)
@@ -1370,6 +1382,8 @@ def render_analysis(user_id: str, access_token: str):
 
         with col3:
             if st.button("Iniciar nova análise", use_container_width=True):
+                clean_temp_files()
+                
                 st.session_state.pop("report", None)
                 st.session_state.pop("video_path", None)
                 st.session_state.pop("audio_path", None)
