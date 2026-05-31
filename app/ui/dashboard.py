@@ -1710,41 +1710,46 @@ def render_profile(user_id: str, access_token: str):
     render_back_to_home_button()
 
 
-user_id = get_current_user_id()
-access_token = get_access_token()
+def run_app():
+    user_id = get_current_user_id()
+    access_token = get_access_token()
 
-if not user_id or not access_token:
-    render_login()
-else:
-    if not has_network_connection():
-        st.error("Erro, verifique sua conexão com a rede.")
-
-    elif not profile_exists(user_id, access_token):
-        render_complete_profile(user_id, access_token)
-
+    if not user_id or not access_token:
+        render_login()
     else:
-        if "page" not in st.session_state:
-            st.session_state["page"] = "home"
+        if not has_network_connection():
+            st.error("Erro, verifique sua conexão com a rede.")
 
-        render_sidebar(user_id, access_token)
-
-        current_page = st.session_state.get("page", "home")
-
-        if current_page == "home":
-            render_home(user_id, access_token)
-
-        elif current_page == "analysis":
-            render_analysis(user_id, access_token)
-
-        elif current_page == "history":
-            render_history(user_id, access_token)
-
-        elif current_page == "detail":
-            render_detail(user_id, access_token)
-
-        elif current_page == "profile":
-            render_profile(user_id, access_token)
+        elif not profile_exists(user_id, access_token):
+            render_complete_profile(user_id, access_token)
 
         else:
-            st.session_state["page"] = "home"
-            st.rerun()
+            if "page" not in st.session_state:
+                st.session_state["page"] = "home"
+
+            render_sidebar(user_id, access_token)
+
+            current_page = st.session_state.get("page", "home")
+
+            if current_page == "home":
+                render_home(user_id, access_token)
+
+            elif current_page == "analysis":
+                render_analysis(user_id, access_token)
+
+            elif current_page == "history":
+                render_history(user_id, access_token)
+
+            elif current_page == "detail":
+                render_detail(user_id, access_token)
+
+            elif current_page == "profile":
+                render_profile(user_id, access_token)
+
+            else:
+                st.session_state["page"] = "home"
+                st.rerun()
+
+
+if __name__ == "__main__":
+    run_app()
