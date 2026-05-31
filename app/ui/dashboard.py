@@ -36,6 +36,7 @@ from app.services.temp_file_cleaner import clean_temp_files
 from app.utils.file_manager import save_uploaded_file
 from app.utils.validators import get_password_rules_message, is_valid_password
 from app.ui.styles import apply_global_styles
+from app.ui.components.sidebar import render_sidebar
 
 
 st.set_page_config(
@@ -329,72 +330,6 @@ def render_complete_profile(user_id: str, access_token: str):
                 st.rerun()
             else:
                 st.error(result["message"])
-
-
-def render_sidebar(user_id: str, access_token: str):
-    profile = get_profile(user_id, access_token)
-    user = st.session_state.get("user")
-    user_email = getattr(user, "email", "") if user else ""
-
-    with st.sidebar:
-        st.markdown(
-            """
-            <div class="brand-wrap">
-                <div class="brand-icon">AI</div>
-                <div>
-                    <div class="brand-title">Análise de<br>Comunicação</div>
-                    <div class="brand-subtitle">Oratória com IA</div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        if profile:
-            render_avatar(profile.get("avatar_url", ""), width=76)
-            st.markdown(
-                f"""
-                <div style="margin-bottom: 1.6rem;">
-                    <div class="sidebar-profile-name">
-                        {profile.get('first_name', '')} {profile.get('last_name', '')}
-                    </div>
-                    <div class="sidebar-profile-email">{user_email}</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        if st.button("Início"):
-            st.session_state["page"] = "home"
-            st.rerun()
-
-        if st.button("Análise"):
-            clean_temp_files()
-
-            st.session_state["page"] = "analysis"
-            st.session_state.pop("report", None)
-            st.session_state.pop("video_path", None)
-            st.session_state.pop("audio_path", None)
-            st.session_state.pop("uploaded_file_name", None)
-            st.rerun()
-
-        if st.button("Histórico"):
-            st.session_state["page"] = "history"
-            st.rerun()
-
-        if st.button("Perfil"):
-            st.session_state["page"] = "profile"
-            st.rerun()
-
-        st.markdown(
-            '<div class="sidebar-section-divider"></div>',
-            unsafe_allow_html=True
-        )
-
-        if st.button("Sair da conta"):
-            clean_temp_files()
-            st.session_state.clear()
-            st.rerun()
 
 
 def render_back_to_home_button():
@@ -1187,7 +1122,7 @@ def run_app():
             if "page" not in st.session_state:
                 st.session_state["page"] = "home"
 
-            render_sidebar(user_id, access_token)
+            render_sidebar(user_id, access_token, render_avatar)
 
             current_page = st.session_state.get("page", "home")
 
