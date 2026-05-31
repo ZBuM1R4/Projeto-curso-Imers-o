@@ -1,16 +1,13 @@
 def calculate_communication_score(report: dict, ia_metricas: dict = None) -> dict:
     score = 100
 
-    filler_words = report.get("vicios_de_linguagem", {})
     pausas = report.get("pausas", {})
     repeticoes = report.get("repeticoes", {})
 
-    total_filler_words = sum(filler_words.values())
     total_pausas_longas = pausas.get("quantidade_pausas_longas", 0)
     total_termos_recorrentes = len(repeticoes.get("termos_recorrentes", {}))
 
     # Penalidades base (regras locais)
-    score -= total_filler_words * 2
     score -= total_pausas_longas * 5
     score -= total_termos_recorrentes * 3
 
@@ -54,7 +51,6 @@ def calculate_communication_score(report: dict, ia_metricas: dict = None) -> dic
         "classificacao": classificacao,
         "comentario": comentario,
         "detalhes": {
-            "total_vicios": total_filler_words,
             "total_pausas_longas": total_pausas_longas,
             "total_termos_recorrentes": total_termos_recorrentes,
             "ia_metricas": ia_metricas or {}

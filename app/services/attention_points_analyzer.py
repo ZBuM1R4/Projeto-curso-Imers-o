@@ -1,17 +1,11 @@
 def generate_attention_points(report: dict) -> list[str]:
     attention_points = []
 
-    filler_words = report.get("vicios_de_linguagem", {})
     pausas = report.get("pausas", {})
     repeticoes = report.get("repeticoes", {})
 
-    for termo, qtd in filler_words.items():
-        if qtd >= 2:
-            attention_points.append(
-                f'Uso frequente de "{termo}" ({qtd} ocorrência(s)).'
-            )
-
     pausas_longas = pausas.get("pausas_longas", [])
+
     for pausa in pausas_longas:
         attention_points.append(
             f"Pausa longa detectada entre {round(pausa['start'], 2)}s e "
@@ -19,6 +13,7 @@ def generate_attention_points(report: dict) -> list[str]:
         )
 
     termos_recorrentes = repeticoes.get("termos_recorrentes", {})
+
     for termo, qtd in termos_recorrentes.items():
         if qtd >= 3:
             attention_points.append(

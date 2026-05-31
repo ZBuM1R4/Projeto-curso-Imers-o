@@ -170,20 +170,7 @@ def filter_attention_points(points: list[str]) -> list[str]:
 
 def filter_recurring_terms(report: dict) -> dict:
     repetitions = report.get("repeticoes", {})
-    recurring_terms = repetitions.get("termos_recorrentes", {})
-    filler_words = report.get("vicios_de_linguagem", {})
-
-    filler_terms = {str(term).lower() for term in filler_words.keys()}
-
-    filtered = {}
-
-    for term, quantity in recurring_terms.items():
-        if str(term).lower() in filler_terms:
-            continue
-
-        filtered[term] = quantity
-
-    return filtered
+    return repetitions.get("termos_recorrentes", {}) or {}
 
 
 # =========================================================

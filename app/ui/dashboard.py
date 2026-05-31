@@ -19,7 +19,6 @@ from app.database.supabase_db import (
 from app.services.attention_points_analyzer import generate_attention_points
 from app.services.audio_extractor import extract_audio
 from app.services.docx_exporter import build_docx_report
-from app.services.filler_word_analyzer import analyze_filler_words
 from app.services.gemini_full_context_analyzer import (
     analyze_full_transcription_with_gemini,
 )
@@ -1067,14 +1066,12 @@ def generate_report(
         return None
 
     texto = transcribe_audio(extracted_audio)
-    filler_words = analyze_filler_words(texto)
     pause_data = analyze_pauses(extracted_audio)
     sequential_repetitions = analyze_sequential_repetitions(texto)
     frequent_terms = analyze_frequent_terms(texto)
 
     partial_report = {
         "transcricao": texto,
-        "vicios_de_linguagem": filler_words,
         "pausas": pause_data,
         "repeticoes": {
             "sequenciais": sequential_repetitions,
@@ -1100,7 +1097,6 @@ def generate_report(
 
     report = build_report(
         transcription_text=texto,
-        filler_words=filler_words,
         pause_data=pause_data,
         frequent_terms=frequent_terms,
         sequential_repetitions=sequential_repetitions,
