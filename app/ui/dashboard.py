@@ -1519,11 +1519,11 @@ def render_history(user_id: str, access_token: str):
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.metric("Análises feitas", stats["total_analyses"])
+        st.metric("Análises disponíveis", stats["total_analyses"])
 
     with col2:
         st.metric(
-            "Análises restantes",
+            "Restantes no mês",
             f"{remaining_analyses}/{MONTHLY_ANALYSIS_LIMIT}"
         )
 
@@ -1566,9 +1566,9 @@ def render_history(user_id: str, access_token: str):
 
         with col3:
             if days_remaining <= 1:
-                st.caption("Expira em até 1 dia")
+                st.caption("Descartada em até 1 dia")
             else:
-                st.caption(f"Expira em {days_remaining} dias")
+                st.caption(f"Descartada em {days_remaining} dias")
 
         with col4:
             if st.button("Abrir", key=f"open_{analysis_id}"):
