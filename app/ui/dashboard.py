@@ -34,6 +34,7 @@ from app.ui.components.sidebar import render_sidebar
 from app.ui.components.avatar import render_avatar, render_uploaded_avatar_preview
 from app.ui.pages.home import render_home
 from app.ui.pages.history import render_history
+from app.ui.pages.detail import render_detail
 
 
 st.set_page_config(
@@ -577,41 +578,6 @@ def render_analysis(user_id: str, access_token: str):
     render_back_to_home_button()
 
 
-def render_detail(user_id: str, access_token: str):
-    if not has_network_connection():
-        st.error("Erro, verifique sua conexão com a rede.")
-        return
-
-    selected_analysis = st.session_state.get("selected_analysis")
-
-    if not selected_analysis:
-        st.warning("Nenhuma análise selecionada.")
-        render_back_to_home_button()
-        return
-
-    try:
-        report = get_analysis_by_id_supabase(
-            selected_analysis,
-            user_id,
-            access_token
-        )
-    except Exception:
-        st.error("Erro, verifique sua conexão com a rede.")
-        return
-
-    if not report:
-        st.error("Análise não encontrada.")
-        render_back_to_home_button()
-        return
-
-    if st.button("Voltar ao histórico"):
-        st.session_state["page"] = "history"
-        st.rerun()
-
-    render_report_details(report, video_name="analise_historico")
-    render_back_to_home_button()
-
-
 def render_profile(user_id: str, access_token: str):
     profile = get_profile(user_id, access_token)
 
@@ -725,7 +691,7 @@ def run_app():
                 render_history(user_id, access_token)
 
             elif current_page == "detail":
-                render_detail(user_id, access_token)
+                render_detail(user_id, access_token, render_report_details)
 
             elif current_page == "profile":
                 render_profile(user_id, access_token)
