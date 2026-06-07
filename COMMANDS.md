@@ -1,48 +1,76 @@
 🚀 Comando do Streamlit (principal):
-        python -m streamlit run app/ui/dashboard.py
+        python -m streamlit run app/main.py
            👉 "CTRL + C" no terminal para parar de rodar
 
 🔧 AMBIENTE
     Ativar ambiente (Git Bash):
         source .venv/Scripts/activate
+
     Criar ambiente (se precisar):
         python -m venv .venv
+
 
 📦 INSTALAÇÃO
     Instalar biblioteca:
         pip install nome-da-lib
+
     Atualizar requirements:
         pip freeze > requirements.txt
+
+    Instalar dependências do projeto:
+        pip install -r requirements.txt
+
 
 ▶️ EXECUÇÃO
     Rodar versão terminal (teste rápido):
         python app/main.py
+
     Rodar interface (Streamlit):
-        python -m streamlit run app/ui/dashboard.py
+        python -m streamlit run app/main.py
+
 
 🛑 CONTROLE
     Parar Streamlit:
         Ctrl + C
 
+
+🔎 BUSCAS ÚTEIS NO PROJETO
+    Procurar uma função ou termo no código:
+        grep -R "termo_procurado" app
+
+
+🧹 LIMPEZA DE ARQUIVOS TEMPORÁRIOS
+        Limpar vídeos e áudios temporários manualmente:
+            find data/input data/temp -type f ! -name ".gitkeep" -delete
+
+
+
 🧪 DEBUG
     Ver erros rapidamente:
         python app/main.py
-        👉 Esse é seu “modo debug rápido”
+            👉 Esse é seu “modo debug rápido”
+
 
 🧾 GIT (versionamento)
     Ver status:
         git status
+
     Adicionar mudanças:
         git add .
+
     Fazer commit:
         git commit -m "Mensagem do commit"
+
     Enviar para o repositório remoto:
         git push origin main
+
 
 🌱 BRANCH
     Criar nova branch:
         git checkout -b nome-da-branch
+
     Voltar para main:
         git checkout main
+
     Mesclar branch:
         git merge nome-da-branch

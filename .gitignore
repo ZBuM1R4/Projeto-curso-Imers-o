@@ -12,10 +12,17 @@ __pycache__/
 # Variáveis de ambiente
 .env
 
-# Dados do projeto
+# Dados temporários do projeto
 data/input/*
 data/temp/*
 data/output/*
+data/profile_images/*
+
+# Mantém as pastas no projeto
+!data/input/.gitkeep
+!data/temp/.gitkeep
+!data/output/.gitkeep
+!data/profile_images/.gitkeep
 
 # Logs
 *.log
@@ -27,19 +34,11 @@ data/output/*
 .DS_Store
 Thumbs.db
 
-# Arquivos grandes (opcional)
+# Arquivos grandes de mídia
 *.mp4
 *.mov
 *.avi
 *.mkv
 *.wav
-
-# Arquivos temporários do sistema
-data/input/*
-data/temp/*
-data/profile_images/*
-
-# Mantém as pastas no projeto
-!data/input/.gitkeep
-!data/temp/.gitkeep
-!data/profile_images/.gitkeep
+*.mp3
+*.webm
