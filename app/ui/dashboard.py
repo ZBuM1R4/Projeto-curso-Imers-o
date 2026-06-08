@@ -32,6 +32,7 @@ from app.utils.validators import get_password_rules_message, is_valid_password
 from app.ui.styles import apply_global_styles
 from app.ui.components.sidebar import render_sidebar
 from app.ui.components.avatar import render_avatar, render_uploaded_avatar_preview
+from app.ui.components.navigation import render_back_to_home_button
 from app.ui.pages.home import render_home
 from app.ui.pages.history import render_history
 from app.ui.pages.detail import render_detail
@@ -237,14 +238,6 @@ def render_complete_profile(user_id: str, access_token: str):
                 st.rerun()
             else:
                 st.error(result["message"])
-
-
-def render_back_to_home_button():
-    st.divider()
-
-    if st.button("Voltar para início"):
-        st.session_state["page"] = "home"
-        st.rerun()
 
 
 def get_current_user_id():

@@ -2,14 +2,7 @@ import streamlit as st
 
 from app.database.supabase_db import get_analysis_by_id_supabase
 from app.services.network_checker import has_network_connection
-
-
-def render_back_to_home_button():
-    st.divider()
-
-    if st.button("Voltar para início"):
-        st.session_state["page"] = "home"
-        st.rerun()
+from app.ui.components.navigation import render_back_to_home_button
 
 
 def render_detail(

@@ -11,6 +11,7 @@ from app.database.supabase_db import (
     get_remaining_monthly_analyses_supabase,
 )
 from app.services.network_checker import has_network_connection
+from app.ui.components.navigation import render_back_to_home_button
 
 
 def get_days_until_expiration(expires_at: str) -> int:
@@ -98,14 +99,6 @@ def render_analysis_title(title: str, ai_available: bool):
     else:
         st.write(f"⚠️ 📄 {title}")
         st.caption("Análise feita sem IA. Resultados podem ser inconsistentes.")
-
-
-def render_back_to_home_button():
-    st.divider()
-
-    if st.button("Voltar para início"):
-        st.session_state["page"] = "home"
-        st.rerun()
 
 
 def render_history(user_id: str, access_token: str):
