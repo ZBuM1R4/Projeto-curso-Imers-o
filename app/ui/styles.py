@@ -6,24 +6,32 @@ def apply_global_styles():
         """
         <style>
             :root {
-                --bg-main: #070b14;
-                --bg-card: rgba(18, 24, 38, 0.84);
-                --bg-card-soft: rgba(22, 29, 46, 0.72);
-                --border-soft: rgba(148, 163, 184, 0.18);
-                --border-accent: rgba(99, 102, 241, 0.55);
-                --text-main: #f8fafc;
-                --text-muted: #aab4c4;
-                --text-soft: #7d8798;
-                --accent-blue: #4f7cff;
-                --accent-purple: #7c3aed;
-                --accent-green: #34d399;
+                --bg-main: #061A24;
+                --bg-main-dark: #031118;
+                --bg-sidebar: #04141C;
+                --bg-card: rgba(8, 43, 54, 0.84);
+                --bg-card-soft: rgba(11, 53, 66, 0.72);
+
+                --border-soft: rgba(217, 226, 231, 0.16);
+                --border-strong: rgba(217, 226, 231, 0.28);
+                --border-accent: rgba(0, 166, 180, 0.48);
+
+                --text-main: #F8FAFC;
+                --text-muted: #A8BBC4;
+                --text-soft: #D9E2E7;
+                --text-subtle: #78909A;
+
+                --accent-primary: #005F73;
+                --accent-primary-light: #0A7C8C;
+                --accent-primary-bright: #00A6B4;
+                --accent-green: #34D399;
             }
 
             html, body, [data-testid="stAppViewContainer"] {
                 background:
-                    radial-gradient(circle at 20% 10%, rgba(79, 124, 255, 0.10), transparent 28%),
-                    radial-gradient(circle at 80% 30%, rgba(124, 58, 237, 0.12), transparent 32%),
-                    linear-gradient(135deg, #070b14 0%, #0a0f1c 48%, #070b14 100%) !important;
+                    radial-gradient(circle at 20% 10%, rgba(0, 166, 180, 0.10), transparent 28%),
+                    radial-gradient(circle at 80% 30%, rgba(0, 95, 115, 0.14), transparent 32%),
+                    linear-gradient(135deg, #061A24 0%, #031118 48%, #082B36 100%) !important;
                 color: var(--text-main);
             }
 
@@ -40,8 +48,8 @@ def apply_global_styles():
 
             [data-testid="stSidebar"] {
                 background:
-                    linear-gradient(180deg, rgba(15, 20, 34, 0.98), rgba(10, 14, 24, 0.98)) !important;
-                border-right: 1px solid rgba(148, 163, 184, 0.14);
+                    linear-gradient(180deg, rgba(4, 20, 28, 0.98), rgba(3, 17, 24, 0.98)) !important;
+                border-right: 1px solid rgba(217, 226, 231, 0.12);
             }
 
             [data-testid="stSidebar"] > div:first-child {
@@ -57,6 +65,7 @@ def apply_global_styles():
 
             h1, h2, h3 {
                 letter-spacing: -0.04em;
+                color: var(--text-main);
             }
 
             p {
@@ -66,24 +75,25 @@ def apply_global_styles():
 
             div.stButton > button {
                 border-radius: 12px;
-                border: 1px solid rgba(148, 163, 184, 0.22);
-                background: rgba(15, 23, 42, 0.72);
-                color: #f8fafc;
+                border: 1px solid var(--border-strong);
+                background: rgba(6, 26, 36, 0.72);
+                color: var(--text-main);
                 padding: 0.72rem 1.05rem;
                 font-weight: 700;
                 transition: all 0.2s ease;
             }
 
             div.stButton > button:hover {
-                border-color: rgba(99, 102, 241, 0.75);
-                background: rgba(79, 124, 255, 0.18);
+                border-color: rgba(0, 166, 180, 0.65);
+                background: linear-gradient(135deg, rgba(0, 95, 115, 0.92), rgba(10, 124, 140, 0.86));
                 color: #ffffff;
                 transform: translateY(-1px);
+                box-shadow: 0 12px 28px rgba(0, 166, 180, 0.16);
             }
 
             [data-testid="stFileUploader"] {
-                background: rgba(15, 23, 42, 0.72);
-                border: 1px dashed rgba(148, 163, 184, 0.26);
+                background: rgba(6, 26, 36, 0.72);
+                border: 1px dashed rgba(217, 226, 231, 0.26);
                 border-radius: 22px;
                 padding: 1.2rem;
             }
@@ -94,12 +104,12 @@ def apply_global_styles():
             }
 
             .app-shell {
-                border: 1px solid rgba(148, 163, 184, 0.12);
+                border: 1px solid rgba(217, 226, 231, 0.12);
                 border-radius: 28px;
                 background:
-                    radial-gradient(circle at 30% 20%, rgba(79, 124, 255, 0.08), transparent 32%),
-                    radial-gradient(circle at 80% 40%, rgba(124, 58, 237, 0.10), transparent 34%),
-                    rgba(8, 13, 24, 0.42);
+                    radial-gradient(circle at 30% 20%, rgba(0, 166, 180, 0.08), transparent 32%),
+                    radial-gradient(circle at 80% 40%, rgba(0, 95, 115, 0.12), transparent 34%),
+                    rgba(3, 17, 24, 0.42);
                 padding: 0;
             }
 
@@ -117,12 +127,12 @@ def apply_global_styles():
                 border-radius: 14px;
                 background:
                     radial-gradient(circle at 30% 20%, rgba(255,255,255,0.30), transparent 24%),
-                    linear-gradient(135deg, #4f7cff 0%, #7c3aed 100%);
+                    linear-gradient(135deg, #005F73 0%, #00A6B4 100%);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 box-shadow:
-                    0 0 28px rgba(99, 102, 241, 0.42),
+                    0 0 28px rgba(0, 166, 180, 0.30),
                     inset 0 0 12px rgba(255, 255, 255, 0.12);
                 color: #ffffff;
                 font-size: 0.95rem;
@@ -135,11 +145,11 @@ def apply_global_styles():
                 font-weight: 850;
                 line-height: 1.08;
                 letter-spacing: -0.035em;
-                color: #f8fafc;
+                color: var(--text-main);
             }
 
             .brand-subtitle {
-                color: #94a3b8;
+                color: var(--text-muted);
                 font-size: 0.78rem;
                 margin-top: 0.2rem;
             }
@@ -151,55 +161,55 @@ def apply_global_styles():
                 padding: 1rem;
                 margin-bottom: 1.3rem;
                 border-radius: 18px;
-                background: rgba(15, 23, 42, 0.62);
-                border: 1px solid rgba(148, 163, 184, 0.14);
+                background: rgba(6, 26, 36, 0.62);
+                border: 1px solid rgba(217, 226, 231, 0.14);
             }
 
             .sidebar-profile-name {
                 font-weight: 800;
-                color: #f8fafc;
+                color: var(--text-main);
                 margin-bottom: 2px;
             }
 
             .sidebar-profile-email {
-                color: #94a3b8;
+                color: var(--text-muted);
                 font-size: 0.82rem;
             }
 
             .sidebar-section-divider {
                 height: 1px;
-                background: rgba(148, 163, 184, 0.14);
+                background: rgba(217, 226, 231, 0.14);
                 margin: 1.6rem 0;
             }
 
             .welcome-pill {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                border: 1px solid rgba(148, 163, 184, 0.16);
-                background: rgba(15, 23, 42, 0.62);
-                color: #bcd0ff;
-                border-radius: 999px;
-                padding: 0.52rem 0.9rem;
-                font-size: 0.92rem;
-                margin-bottom: 1.2rem;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                border: 1px solid rgba(217, 226, 231, 0.16) !important;
+                background: rgba(8, 43, 54, 0.62) !important;
+                color: #D9E2E7 !important;
+                border-radius: 999px !important;
+                padding: 0.52rem 0.9rem !important;
+                font-size: 0.92rem !important;
+                margin-bottom: 1.2rem !important;
             }
 
             .hero-title {
-                font-size: clamp(2.35rem, 4.4vw, 4.2rem);
-                line-height: 1.04;
-                font-weight: 850;
-                letter-spacing: -0.065em;
-                color: #f8fafc;
-                margin-bottom: 1.15rem;
+                font-size: clamp(2.35rem, 4.4vw, 4.2rem) !important;
+                line-height: 1.04 !important;
+                font-weight: 850 !important;
+                letter-spacing: -0.065em !important;
+                color: var(--text-main) !important;
+                margin-bottom: 1.15rem !important;
             }
 
             .hero-description {
-                max-width: 760px;
-                color: #aab4c4;
-                font-size: 1.13rem;
-                line-height: 1.75;
-                margin-bottom: 2.2rem;
+                max-width: 760px !important;
+                color: var(--text-muted) !important;
+                font-size: 1.13rem !important;
+                line-height: 1.75 !important;
+                margin-bottom: 2.2rem !important;
             }
 
             .home-grid {
@@ -213,10 +223,10 @@ def apply_global_styles():
             .upload-card {
                 min-height: 300px;
                 border-radius: 26px;
-                border: 1px solid rgba(99, 102, 241, 0.48);
+                border: 1px solid rgba(0, 166, 180, 0.42);
                 background:
-                    radial-gradient(circle at 50% 10%, rgba(79, 124, 255, 0.18), transparent 36%),
-                    linear-gradient(135deg, rgba(18, 24, 38, 0.92), rgba(18, 24, 38, 0.58));
+                    radial-gradient(circle at 50% 10%, rgba(0, 166, 180, 0.16), transparent 36%),
+                    linear-gradient(135deg, rgba(8, 43, 54, 0.92), rgba(6, 26, 36, 0.58));
                 box-shadow:
                     0 0 0 1px rgba(255,255,255,0.02) inset,
                     0 24px 80px rgba(0, 0, 0, 0.25);
@@ -226,7 +236,7 @@ def apply_global_styles():
             .upload-card-inner {
                 height: 100%;
                 min-height: 260px;
-                border: 1px dashed rgba(148, 163, 184, 0.20);
+                border: 1px dashed rgba(217, 226, 231, 0.20);
                 border-radius: 22px;
                 display: flex;
                 flex-direction: column;
@@ -241,25 +251,25 @@ def apply_global_styles():
                 height: 92px;
                 border-radius: 50%;
                 background:
-                    radial-gradient(circle, rgba(79, 124, 255, 0.32), rgba(79, 124, 255, 0.08));
-                border: 1px solid rgba(99, 102, 241, 0.22);
+                    radial-gradient(circle, rgba(0, 166, 180, 0.30), rgba(0, 95, 115, 0.10));
+                border: 1px solid rgba(0, 166, 180, 0.24);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 2.45rem;
                 margin-bottom: 1.3rem;
-                color: #7da2ff;
+                color: #D9E2E7;
             }
 
             .upload-title {
                 font-size: 1.42rem;
                 font-weight: 800;
-                color: #f8fafc;
+                color: var(--text-main);
                 margin-bottom: 0.35rem;
             }
 
             .upload-subtitle {
-                color: #aab4c4;
+                color: var(--text-muted);
                 margin-bottom: 1.4rem;
             }
 
@@ -271,15 +281,15 @@ def apply_global_styles():
                 border-radius: 14px;
                 padding: 0.9rem 2rem;
                 min-width: 230px;
-                background: linear-gradient(135deg, #4f7cff, #7c3aed);
+                background: linear-gradient(135deg, #005F73, #00A6B4);
                 color: white;
                 font-weight: 800;
-                box-shadow: 0 16px 38px rgba(79, 124, 255, 0.22);
+                box-shadow: 0 16px 38px rgba(0, 166, 180, 0.20);
                 margin-bottom: 1rem;
             }
 
             .formats-text {
-                color: #94a3b8;
+                color: var(--text-subtle);
                 font-size: 0.92rem;
             }
 
@@ -288,10 +298,10 @@ def apply_global_styles():
                 min-height: 300px;
                 overflow: hidden;
                 border-radius: 26px;
-                border: 1px solid rgba(148, 163, 184, 0.16);
+                border: 1px solid rgba(217, 226, 231, 0.16);
                 background:
-                    radial-gradient(circle at 85% 20%, rgba(124, 58, 237, 0.24), transparent 30%),
-                    linear-gradient(135deg, rgba(18, 24, 38, 0.86), rgba(18, 24, 38, 0.52));
+                    radial-gradient(circle at 85% 20%, rgba(0, 166, 180, 0.18), transparent 30%),
+                    linear-gradient(135deg, rgba(8, 43, 54, 0.86), rgba(6, 26, 36, 0.52));
                 padding: 2rem;
             }
 
@@ -300,7 +310,7 @@ def apply_global_styles():
                 height: 78px;
                 border-radius: 50%;
                 background:
-                    radial-gradient(circle, rgba(124, 58, 237, 0.32), rgba(124, 58, 237, 0.08));
+                    radial-gradient(circle, rgba(0, 166, 180, 0.30), rgba(0, 95, 115, 0.10));
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -311,12 +321,12 @@ def apply_global_styles():
             .history-title {
                 font-size: 1.45rem;
                 font-weight: 800;
-                color: #f8fafc;
+                color: var(--text-main);
                 margin-bottom: 0.6rem;
             }
 
             .history-description {
-                color: #aab4c4;
+                color: var(--text-muted);
                 max-width: 340px;
                 margin-bottom: 1.4rem;
             }
@@ -331,55 +341,56 @@ def apply_global_styles():
             }
 
             .chart-line {
-                stroke: #8b5cf6;
+                stroke: #00A6B4;
                 stroke-width: 4;
                 fill: none;
-                filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.55));
+                filter: drop-shadow(0 0 8px rgba(0, 166, 180, 0.45));
             }
 
             .chart-area {
                 fill: url(#purpleGradient);
-                opacity: 0.5;
+                opacity: 0.45;
             }
 
             .privacy-card {
-                margin-top: 1rem;
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-                border-radius: 22px;
-                border: 1px solid rgba(148, 163, 184, 0.13);
-                background: rgba(15, 23, 42, 0.55);
-                padding: 1.1rem 1.3rem;
+                margin-top: 1rem !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 1rem !important;
+                border-radius: 22px !important;
+                border: 1px solid rgba(217, 226, 231, 0.13) !important;
+                background: rgba(8, 43, 54, 0.55) !important;
+                padding: 1.1rem 1.3rem !important;
             }
 
             .privacy-icon {
-                width: 48px;
-                height: 48px;
-                border-radius: 14px;
-                background: rgba(79, 124, 255, 0.12);
-                color: #8ca8ff;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.45rem;
-                flex: 0 0 auto;
+                width: 48px !important;
+                height: 48px !important;
+                border-radius: 14px !important;
+                background: linear-gradient(135deg, rgba(0, 95, 115, 0.92), rgba(0, 166, 180, 0.84)) !important;
+                color: #FFFFFF !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 1.45rem !important;
+                flex: 0 0 auto !important;
+                box-shadow: 0 10px 28px rgba(0, 166, 180, 0.14);
             }
 
             .privacy-title {
-                font-weight: 800;
-                color: #f8fafc;
-                margin-bottom: 0.15rem;
+                font-weight: 800 !important;
+                color: var(--text-main) !important;
+                margin-bottom: 0.15rem !important;
             }
 
             .privacy-text {
-                color: #aab4c4;
+                color: var(--text-muted) !important;
             }
 
             .section-card {
                 border-radius: 24px;
-                border: 1px solid rgba(148, 163, 184, 0.14);
-                background: rgba(15, 23, 42, 0.58);
+                border: 1px solid rgba(217, 226, 231, 0.14);
+                background: rgba(8, 43, 54, 0.58);
                 padding: 1.4rem;
                 margin-bottom: 1rem;
             }
@@ -394,27 +405,13 @@ def apply_global_styles():
                 display: inline-block;
             }
 
-            @media (max-width: 980px) {
-                .block-container {
-                    padding-left: 1.6rem;
-                    padding-right: 1.6rem;
-                }
-
-                .home-grid {
-                    grid-template-columns: 1fr;
-                }
-
-                .chart-art {
-                    opacity: 0.35;
-                }
-            }
             .custom-upload-card {
                 min-height: 360px;
                 border-radius: 26px;
-                border: 1px solid rgba(99, 102, 241, 0.48);
+                border: 1px solid rgba(0, 166, 180, 0.42);
                 background:
-                    radial-gradient(circle at 50% 12%, rgba(79, 124, 255, 0.20), transparent 35%),
-                    linear-gradient(135deg, rgba(18, 24, 38, 0.92), rgba(18, 24, 38, 0.58));
+                    radial-gradient(circle at 50% 12%, rgba(0, 166, 180, 0.18), transparent 35%),
+                    linear-gradient(135deg, rgba(8, 43, 54, 0.92), rgba(6, 26, 36, 0.58));
                 box-shadow:
                     0 0 0 1px rgba(255,255,255,0.02) inset,
                     0 24px 80px rgba(0, 0, 0, 0.25);
@@ -424,7 +421,7 @@ def apply_global_styles():
 
             .custom-upload-inner {
                 min-height: 315px;
-                border: 1px dashed rgba(148, 163, 184, 0.22);
+                border: 1px dashed rgba(217, 226, 231, 0.22);
                 border-radius: 22px;
                 display: flex;
                 flex-direction: column;
@@ -440,32 +437,32 @@ def apply_global_styles():
                 height: 92px;
                 border-radius: 50%;
                 background:
-                    radial-gradient(circle, rgba(79, 124, 255, 0.34), rgba(79, 124, 255, 0.08));
-                border: 1px solid rgba(99, 102, 241, 0.28);
+                    radial-gradient(circle, rgba(0, 166, 180, 0.30), rgba(0, 95, 115, 0.10));
+                border: 1px solid rgba(0, 166, 180, 0.26);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 2.35rem;
                 margin-bottom: 0.7rem;
-                box-shadow: 0 0 34px rgba(79, 124, 255, 0.18);
+                box-shadow: 0 0 34px rgba(0, 166, 180, 0.16);
             }
 
             .custom-card-title {
                 font-size: 1.45rem;
                 font-weight: 850;
-                color: #f8fafc;
+                color: var(--text-main);
                 letter-spacing: -0.035em;
             }
 
             .custom-card-text {
                 max-width: 520px;
-                color: #aab4c4;
+                color: var(--text-muted);
                 line-height: 1.65;
                 font-size: 1rem;
             }
 
             .custom-card-note {
-                color: #7d8798;
+                color: var(--text-subtle);
                 font-size: 0.9rem;
                 margin-top: 0.5rem;
             }
@@ -475,10 +472,10 @@ def apply_global_styles():
                 min-height: 360px;
                 overflow: hidden;
                 border-radius: 26px;
-                border: 1px solid rgba(148, 163, 184, 0.18);
+                border: 1px solid rgba(217, 226, 231, 0.18);
                 background:
-                    radial-gradient(circle at 85% 20%, rgba(124, 58, 237, 0.24), transparent 30%),
-                    linear-gradient(135deg, rgba(18, 24, 38, 0.86), rgba(18, 24, 38, 0.52));
+                    radial-gradient(circle at 85% 20%, rgba(0, 166, 180, 0.18), transparent 30%),
+                    linear-gradient(135deg, rgba(8, 43, 54, 0.86), rgba(6, 26, 36, 0.52));
                 padding: 2rem;
                 margin-bottom: 1rem;
             }
@@ -493,54 +490,55 @@ def apply_global_styles():
             }
 
             .home-action-card {
-                min-height: 310px;
-                border-radius: 26px;
-                border: 1px solid rgba(148, 163, 184, 0.18);
+                min-height: 310px !important;
+                border-radius: 26px !important;
+                border: 1px solid rgba(217, 226, 231, 0.18) !important;
                 background:
-                    radial-gradient(circle at 50% 10%, rgba(79, 124, 255, 0.16), transparent 35%),
-                    linear-gradient(135deg, rgba(18, 24, 38, 0.90), rgba(18, 24, 38, 0.58));
-                padding: 2rem;
-                text-align: center;
-                margin-bottom: 1rem;
+                    radial-gradient(circle at 50% 10%, rgba(0, 166, 180, 0.14), transparent 35%),
+                    linear-gradient(135deg, rgba(8, 43, 54, 0.90), rgba(6, 26, 36, 0.58)) !important;
+                padding: 2rem !important;
+                text-align: center !important;
+                margin-bottom: 1rem !important;
             }
 
             .home-action-icon {
-                width: 86px;
-                height: 86px;
-                border-radius: 50%;
+                width: 86px !important;
+                height: 86px !important;
+                border-radius: 50% !important;
                 background:
-                    radial-gradient(circle, rgba(79, 124, 255, 0.34), rgba(79, 124, 255, 0.08));
-                border: 1px solid rgba(99, 102, 241, 0.28);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 2.25rem;
-                margin: 0 auto 1.2rem auto;
+                    radial-gradient(circle, rgba(0, 166, 180, 0.30), rgba(0, 95, 115, 0.10)) !important;
+                border: 1px solid rgba(0, 166, 180, 0.26) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 2.25rem !important;
+                margin: 0 auto 1.2rem auto !important;
+                box-shadow: 0 0 32px rgba(0, 166, 180, 0.14);
             }
 
             .home-action-title {
-                font-size: 1.45rem;
-                font-weight: 850;
-                color: #f8fafc;
-                margin-bottom: 0.7rem;
+                font-size: 1.45rem !important;
+                font-weight: 850 !important;
+                color: var(--text-main) !important;
+                margin-bottom: 0.7rem !important;
             }
 
             .home-action-text {
-                color: #aab4c4;
-                line-height: 1.65;
-                margin-bottom: 0.8rem;
+                color: var(--text-muted) !important;
+                line-height: 1.65 !important;
+                margin-bottom: 0.8rem !important;
             }
 
             .home-action-note {
-                color: #7d8798;
-                font-size: 0.9rem;
+                color: var(--text-subtle) !important;
+                font-size: 0.9rem !important;
             }
 
             .result-video-card {
                 max-width: 760px;
             }
 
-                        .welcome-pill,
+            .welcome-pill,
             .hero-title,
             .hero-description,
             .home-action-card,
@@ -559,112 +557,19 @@ def apply_global_styles():
                 box-sizing: border-box !important;
             }
 
-            .welcome-pill {
-                display: inline-flex !important;
-                align-items: center !important;
-                gap: 8px !important;
-                border: 1px solid rgba(148, 163, 184, 0.16) !important;
-                background: rgba(15, 23, 42, 0.62) !important;
-                color: #bcd0ff !important;
-                border-radius: 999px !important;
-                padding: 0.52rem 0.9rem !important;
-                font-size: 0.92rem !important;
-                margin-bottom: 1.2rem !important;
-            }
+            @media (max-width: 980px) {
+                .block-container {
+                    padding-left: 1.6rem;
+                    padding-right: 1.6rem;
+                }
 
-            .hero-title {
-                font-size: clamp(2.35rem, 4.4vw, 4.2rem) !important;
-                line-height: 1.04 !important;
-                font-weight: 850 !important;
-                letter-spacing: -0.065em !important;
-                color: #f8fafc !important;
-                margin-bottom: 1.15rem !important;
-            }
+                .home-grid {
+                    grid-template-columns: 1fr;
+                }
 
-            .hero-description {
-                max-width: 760px !important;
-                color: #aab4c4 !important;
-                font-size: 1.13rem !important;
-                line-height: 1.75 !important;
-                margin-bottom: 2.2rem !important;
-            }
-
-            .home-action-card {
-                min-height: 310px !important;
-                border-radius: 26px !important;
-                border: 1px solid rgba(148, 163, 184, 0.18) !important;
-                background:
-                    radial-gradient(circle at 50% 10%, rgba(79, 124, 255, 0.16), transparent 35%),
-                    linear-gradient(135deg, rgba(18, 24, 38, 0.90), rgba(18, 24, 38, 0.58)) !important;
-                padding: 2rem !important;
-                text-align: center !important;
-                margin-bottom: 1rem !important;
-            }
-
-            .home-action-icon {
-                width: 86px !important;
-                height: 86px !important;
-                border-radius: 50% !important;
-                background:
-                    radial-gradient(circle, rgba(79, 124, 255, 0.34), rgba(79, 124, 255, 0.08)) !important;
-                border: 1px solid rgba(99, 102, 241, 0.28) !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                font-size: 2.25rem !important;
-                margin: 0 auto 1.2rem auto !important;
-            }
-
-            .home-action-title {
-                font-size: 1.45rem !important;
-                font-weight: 850 !important;
-                color: #f8fafc !important;
-                margin-bottom: 0.7rem !important;
-            }
-
-            .home-action-text {
-                color: #aab4c4 !important;
-                line-height: 1.65 !important;
-                margin-bottom: 0.8rem !important;
-            }
-
-            .home-action-note {
-                color: #7d8798 !important;
-                font-size: 0.9rem !important;
-            }
-
-            .privacy-card {
-                margin-top: 1rem !important;
-                display: flex !important;
-                align-items: center !important;
-                gap: 1rem !important;
-                border-radius: 22px !important;
-                border: 1px solid rgba(148, 163, 184, 0.13) !important;
-                background: rgba(15, 23, 42, 0.55) !important;
-                padding: 1.1rem 1.3rem !important;
-            }
-
-            .privacy-icon {
-                width: 48px !important;
-                height: 48px !important;
-                border-radius: 14px !important;
-                background: rgba(79, 124, 255, 0.12) !important;
-                color: #8ca8ff !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                font-size: 1.45rem !important;
-                flex: 0 0 auto !important;
-            }
-
-            .privacy-title {
-                font-weight: 800 !important;
-                color: #f8fafc !important;
-                margin-bottom: 0.15rem !important;
-            }
-
-            .privacy-text {
-                color: #aab4c4 !important;
+                .chart-art {
+                    opacity: 0.35;
+                }
             }
         </style>
         """,
