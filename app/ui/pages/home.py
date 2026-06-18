@@ -3,13 +3,7 @@ import streamlit as st
 from app.database.profile_db import get_profile
 from app.services.network_checker import has_network_connection
 from app.services.temp_file_cleaner import clean_temp_files
-
-
-def clear_analysis_session():
-    st.session_state.pop("report", None)
-    st.session_state.pop("video_path", None)
-    st.session_state.pop("audio_path", None)
-    st.session_state.pop("uploaded_file_name", None)
+from app.ui.session_state import clear_analysis_session
 
 
 def render_home(user_id: str, access_token: str):

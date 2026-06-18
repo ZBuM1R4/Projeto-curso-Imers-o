@@ -23,6 +23,11 @@ from app.services.score_analyzer import calculate_communication_score
 from app.services.transcriber import transcribe_audio
 from app.services.temp_file_cleaner import clean_temp_files
 from app.utils.file_manager import save_uploaded_file
+from app.ui.session_state import (
+    clear_analysis_session,
+    get_access_token,
+    get_current_user_id,
+)
 from app.ui.styles import apply_global_styles
 from app.ui.components.sidebar import render_sidebar
 from app.ui.components.avatar import render_avatar
@@ -40,15 +45,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-
-def get_current_user_id():
-    user = st.session_state.get("user")
-    return user.id if user else None
-
-
-def get_access_token():
-    return st.session_state.get("access_token")
 
 
 def generate_report(
@@ -157,10 +153,8 @@ def render_analysis(user_id: str, access_token: str):
             if st.button("Iniciar nova análise", use_container_width=True):
                 clean_temp_files()
                 
-                st.session_state.pop("report", None)
-                st.session_state.pop("video_path", None)
-                st.session_state.pop("audio_path", None)
-                st.session_state.pop("uploaded_file_name", None)
+                clear_analysis_session()
+                
                 st.session_state["page"] = "analysis"
                 st.rerun()
 
