@@ -3,13 +3,10 @@ import streamlit as st
 from app.database.supabase_db import get_analysis_by_id_supabase
 from app.services.network_checker import has_network_connection
 from app.ui.components.navigation import render_back_to_home_button
+from app.ui.components.report_view import render_report_details
 
 
-def render_detail(
-    user_id: str,
-    access_token: str,
-    render_report_details
-):
+def render_detail(user_id: str, access_token: str):
     if not has_network_connection():
         st.error("Erro, verifique sua conexão com a rede.")
         return
