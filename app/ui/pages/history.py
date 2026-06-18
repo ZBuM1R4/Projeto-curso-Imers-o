@@ -125,17 +125,55 @@ def render_history(user_id: str, access_token: str):
 
         with col5:
             if st.button("Descartar", key=f"delete_{analysis_id}"):
-                try:
-                    delete_analysis_supabase(analysis_id, user_id, access_token)
-                except Exception:
-                    st.error("Erro, verifique sua conexão com a rede.")
-                    return
-
-                if st.session_state.get("selected_analysis") == analysis_id:
-                    del st.session_state["selected_analysis"]
-
-                st.success("Análise descartada.")
+                st.session_state["pending_delete_analysis"] = analysis_id
                 st.rerun()
+
+        if st.session_state.get("pending_delete_analysis") == analysis_id:
+            with st.container(border=True):
+                st.warning(
+                    f"Você tem certeza que deseja descartar a análise **{title}**?"
+                )
+
+                st.write(
+                    "Após o descarte, esta análise não poderá mais ser acessada no seu histórico."
+                )
+
+                st.caption(
+                    "Atenção: o limite mensal utilizado por esta análise não será restaurado, "
+                    "pois o relatório permanece registrado na nuvem para fins de controle e acompanhamento. "
+                    "O vídeo original não é armazenado no banco de dados."
+                )
+
+                cancel_col, confirm_col = st.columns([1, 1])
+
+                with cancel_col:
+                    if st.button("Cancelar", key=f"cancel_delete_{analysis_id}"):
+                        st.session_state.pop("pending_delete_analysis", None)
+                        st.rerun()
+
+                with confirm_col:
+                    if st.button(
+                        "Sim, descartar análise",
+                        key=f"confirm_delete_{analysis_id}",
+                        type="primary"
+                    ):
+                        try:
+                            delete_analysis_supabase(
+                                analysis_id,
+                                user_id,
+                                access_token
+                            )
+                        except Exception:
+                            st.error("Erro, verifique sua conexão com a rede.")
+                            return
+
+                        if st.session_state.get("selected_analysis") == analysis_id:
+                            del st.session_state["selected_analysis"]
+
+                        st.session_state.pop("pending_delete_analysis", None)
+
+                        st.success("Análise descartada com sucesso.")
+                        st.rerun()
 
         st.divider()
 

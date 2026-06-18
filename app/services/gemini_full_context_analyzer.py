@@ -41,9 +41,10 @@ def analyze_full_transcription_with_gemini(transcription: str) -> dict:
         prompt = f"""
 Você é um avaliador rigoroso de comunicação oral em português.
 
-Analise a transcrição como um todo e avalie a QUALIDADE REAL da comunicação.
+Avalie a transcrição inteira e dê notas de 0 a 1.
+As notas devem ser severas e proporcionais à frequência dos problemas.
 
-Retorne APENAS JSON no formato:
+Retorne apenas JSON válido neste formato:
 
 {{
   "metricas": {{
@@ -53,38 +54,33 @@ Retorne APENAS JSON no formato:
     "fluidez": 0.0,
     "qualidade_comunicacao": 0.0
   }},
-  "analise": "texto curto explicando os principais problemas"
+  "analise": "análise objetiva, com os principais problemas e o impacto na comunicação"
 }}
 
-Critérios de avaliação:
+Critérios:
+- controle_linguagem: penalize vícios de linguagem, muletas, repetição excessiva, termos soltos e fala desorganizada.
+- clareza: penalize frases confusas, ideias mal conectadas, erros gramaticais e falta de objetividade.
+- formalidade: penalize gírias, coloquialidade excessiva, improviso excessivo e tom pouco profissional.
+- fluidez: penalize hesitações, pausas, cortes, travamentos e quebras de raciocínio.
+- qualidade_comunicacao: avalie segurança, organização, maturidade, objetividade e impacto geral.
 
-- controle_linguagem:
-  penalize vícios de linguagem, muletas e fala desorganizada
+Escala obrigatória:
+- 0.00 a 0.20 = crítico, comunicação muito comprometida.
+- 0.21 a 0.40 = ruim, muitos problemas relevantes.
+- 0.41 a 0.60 = regular, problemas frequentes.
+- 0.61 a 0.80 = bom, poucos problemas.
+- 0.81 a 1.00 = excelente, fala clara, segura e bem estruturada.
 
-- clareza:
-  penalize frases mal construídas, erros gramaticais e confusão
-
-- formalidade:
-  penalize linguagem excessivamente informal ou pouco profissional
-
-- fluidez:
-  penalize pausas, hesitação e quebra de raciocínio
-
-- qualidade_comunicacao:
-  avalie o nível geral da fala:
-  clareza de ideias, segurança, objetividade e maturidade
-
-Escala:
-- 0 = muito ruim
-- 1 = excelente
-
-IMPORTANTE:
-- seja crítico (não seja permissivo)
-- não suavize erros
-- se houver muitos problemas, as notas devem ser baixas
-- coerência entre métricas e análise é obrigatória
-- não use markdown
-- não escreva nada fora do JSON
+Regras:
+- se houver muitos vícios, repetições ou fala confusa, controle_linguagem deve ser no máximo 0.35.
+- se as ideias forem difíceis de entender, clareza deve ser no máximo 0.40.
+- se houver travamentos frequentes, fluidez deve ser no máximo 0.40.
+- se a fala parecer improvisada, insegura ou desorganizada, qualidade_comunicacao deve ser no máximo 0.40.
+- não dê notas altas para falas apenas compreensíveis.
+- seja rigoroso, não suavize falhas.
+- a análise deve citar problemas concretos percebidos na transcrição.
+- não use markdown.
+- não escreva nada fora do JSON.
 
 Transcrição:
 {transcription}
