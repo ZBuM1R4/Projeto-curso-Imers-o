@@ -1,0 +1,107 @@
+import streamlit as st
+
+from app.services.network_checker import has_network_connection
+from app.services.supabase_client import get_supabase_client
+from app.services.temp_file_cleaner import clean_temp_files
+from app.utils.validators import get_password_rules_message, is_valid_password
+
+
+supabase = get_supabase_client()
+
+
+def translate_auth_error(error_message: str) -> str:
+    error_message = error_message.lower()
+
+    if "user already registered" in error_message:
+        return "Este e-mail já possui cadastro."
+
+    if "invalid login credentials" in error_message:
+        return "E-mail ou senha incorretos."
+
+    if "email not confirmed" in error_message:
+        return "E-mail ainda não confirmado. Verifique sua caixa de entrada."
+
+    if "password" in error_message:
+        return get_password_rules_message()
+
+    return "Não foi possível concluir a operação. Verifique os dados informados."
+
+
+def render_login():
+    st.title("Análise de Comunicação")
+    st.subheader("Acesse sua conta")
+
+    tab_login, tab_signup = st.tabs(["Entrar", "Criar conta"])
+
+    with tab_login:
+        with st.form("login_form"):
+            email = st.text_input("Email")
+            password = st.text_input("Senha", type="password")
+            submitted = st.form_submit_button("Entrar")
+
+            if submitted:
+                if not has_network_connection():
+                    st.error("Erro, verifique sua conexão com a rede.")
+                    return
+
+                try:
+                    response = supabase.auth.sign_in_with_password({
+                        "email": email,
+                        "password": password
+                    })
+
+                    clean_temp_files()
+
+                    st.session_state["user"] = response.user
+                    st.session_state["access_token"] = response.session.access_token
+                    st.success("Login realizado com sucesso!")
+                    st.rerun()
+
+                except Exception as e:
+                    st.error(translate_auth_error(str(e)))
+
+    with tab_signup:
+        with st.form("signup_form"):
+            email = st.text_input("Email", key="signup_email")
+            password = st.text_input("Senha", type="password", key="signup_password")
+            confirm_password = st.text_input(
+                "Confirmar senha",
+                type="password",
+                key="signup_confirm_password"
+            )
+
+            st.caption(get_password_rules_message())
+
+            submitted = st.form_submit_button("Criar conta")
+
+            if submitted:
+                if not has_network_connection():
+                    st.error("Erro, verifique sua conexão com a rede.")
+                    return
+
+                if password != confirm_password:
+                    st.error("As senhas não coincidem.")
+                    return
+
+                if not is_valid_password(password):
+                    st.error(get_password_rules_message())
+                    return
+
+                try:
+                    response = supabase.auth.sign_up({
+                        "email": email,
+                        "password": password
+                    })
+
+                    if response.session:
+                        clean_temp_files()
+
+                        st.session_state["user"] = response.user
+                        st.session_state["access_token"] = response.session.access_token
+                        st.success("Conta criada com sucesso! Complete seu cadastro.")
+                        st.rerun()
+                    else:
+                        st.success("Conta criada com sucesso! Agora faça login.")
+
+                except Exception as e:
+                    st.error(translate_auth_error(str(e)))
