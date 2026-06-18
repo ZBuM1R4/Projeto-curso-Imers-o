@@ -9,7 +9,6 @@ from app.database.supabase_db import (
 )
 from app.services.attention_points_analyzer import generate_attention_points
 from app.services.audio_extractor import extract_audio
-from app.services.docx_exporter import build_docx_report
 from app.services.gemini_full_context_analyzer import (
     analyze_full_transcription_with_gemini,
 )
@@ -30,6 +29,7 @@ from app.ui.styles import apply_global_styles
 from app.ui.components.sidebar import render_sidebar
 from app.ui.components.avatar import render_avatar
 from app.ui.components.navigation import render_back_to_home_button
+from app.ui.components.report_view import render_report_details
 from app.ui.pages.home import render_home
 from app.ui.pages.history import render_history
 from app.ui.pages.detail import render_detail
@@ -154,13 +154,6 @@ def get_access_token():
     return st.session_state.get("access_token")
 
 
-def render_ai_warning():
-    st.warning(
-        "⚠️ Esta análise foi gerada sem a avaliação da IA. "
-        "Os resultados podem apresentar inconsistências."
-    )
-
-
 def generate_report(
     video_path: str,
     audio_path: str,
@@ -224,101 +217,6 @@ def generate_report(
         return None
 
     return report
-
-
-def render_report_details(report: dict, video_name: str = "video_analisado"):
-    score_data = report["score_comunicacao"]
-
-    st.subheader("Score de comunicação")
-    st.metric("Pontuação geral", f"{score_data['score']}/100")
-    st.write(f"**Classificação:** {score_data['classificacao']}")
-    st.write(score_data["comentario"])
-
-    analise_ia = report.get("analise_global_ia", {})
-
-    if not analise_ia.get("disponivel", False):
-        render_ai_warning()
-
-    st.subheader("Transcrição")
-    st.write(report["transcricao"])
-
-    st.subheader("Análise global por IA")
-    st.write(analise_ia.get("analise", ""))
-
-    st.subheader("Pontos de atenção")
-
-    pontos_filtrados = []
-
-    for ponto in report.get("pontos_atencao", []):
-        ponto_lower = ponto.lower()
-
-        if "uso frequente" in ponto_lower:
-            continue
-
-        if "vício" in ponto_lower or "vicio" in ponto_lower:
-            continue
-
-        if "vícios" in ponto_lower or "vicios" in ponto_lower:
-            continue
-
-        pontos_filtrados.append(ponto)
-
-    if pontos_filtrados:
-        for ponto in pontos_filtrados:
-            st.write(f"⚠️ {ponto}")
-    else:
-        st.write("Nenhum ponto crítico identificado nesta análise.")
-
-    st.subheader("Pausas")
-    pausas = report.get("pausas", {})
-
-    st.write(f"⏱ Duração total: {pausas.get('duracao_total', 0)}s")
-    st.write(f"🛑 Pausas longas: {pausas.get('quantidade_pausas_longas', 0)}")
-    st.write(f"🔇 Tempo em silêncio: {pausas.get('tempo_total_silencio', 0)}s")
-
-    pausas_longas = pausas.get("pausas_longas", [])
-
-    if pausas_longas:
-        st.write("Pausas detectadas:")
-        for pausa in pausas_longas:
-            st.write(
-                f"- {round(pausa['start'], 2)}s → "
-                f"{round(pausa['end'], 2)}s "
-                f"({round(pausa['duration'], 2)}s)"
-            )
-    else:
-        st.write("Nenhuma pausa longa detectada.")
-
-    st.subheader("Repetições")
-    repeticoes = report.get("repeticoes", {})
-
-    sequenciais = repeticoes.get("sequenciais", [])
-    termos_recorrentes = repeticoes.get("termos_recorrentes", {})
-
-    if sequenciais:
-        st.write("Repetições em sequência:")
-        for repeticao in sequenciais:
-            st.write(f"- {repeticao['termo']}")
-    else:
-        st.write("Nenhuma repetição em sequência.")
-
-    if termos_recorrentes:
-        st.write("Termos mais recorrentes:")
-        for termo, qtd in termos_recorrentes.items():
-            st.write(f"- {termo}: {qtd}")
-    else:
-        st.write("Nenhum termo recorrente relevante.")
-
-    st.divider()
-
-    docx_bytes = build_docx_report(report, video_name=video_name)
-
-    st.download_button(
-        label="Baixar relatório em DOCX",
-        data=docx_bytes,
-        file_name="relatorio_analise_comunicacao.docx",
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
 
 
 def render_analysis(user_id: str, access_token: str):
