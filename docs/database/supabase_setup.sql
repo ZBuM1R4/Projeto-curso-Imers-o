@@ -1,0 +1,126 @@
+-- Supabase setup - Projeto Análise de Comunicação
+-- Este arquivo documenta a estrutura principal do banco e as policies RLS.
+-- Não execute novamente em produção sem revisar o estado atual do banco.
+
+-- =========================
+-- Tabela: profiles
+-- =========================
+
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    first_name text NOT NULL,
+    last_name text NOT NULL,
+    cpf text NOT NULL,
+    phone text NOT NULL,
+    cep text NOT NULL,
+    street text,
+    number text,
+    neighborhood text,
+    city text,
+    state text,
+    created_at timestamptz DEFAULT now(),
+    avatar_url text
+);
+
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS avatar_url text;
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view their own profile"
+ON public.profiles;
+
+CREATE POLICY "Users can view their own profile"
+ON public.profiles
+FOR SELECT
+USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can insert their own profile"
+ON public.profiles;
+
+CREATE POLICY "Users can insert their own profile"
+ON public.profiles
+FOR INSERT
+WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update their own profile"
+ON public.profiles;
+
+CREATE POLICY "Users can update their own profile"
+ON public.profiles
+FOR UPDATE
+USING (auth.uid() = id)
+WITH CHECK (auth.uid() = id);
+
+
+-- =========================
+-- Tabela: analyses
+-- =========================
+
+CREATE TABLE IF NOT EXISTS public.analyses (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    title text,
+    video_name text,
+    score integer,
+    transcription text,
+    report_json jsonb,
+    ai_available boolean,
+    created_at timestamptz DEFAULT now(),
+    expires_at timestamptz,
+    status text DEFAULT 'active'
+);
+
+ALTER TABLE public.analyses
+ADD COLUMN IF NOT EXISTS expires_at timestamptz,
+ADD COLUMN IF NOT EXISTS status text DEFAULT 'active';
+
+UPDATE public.analyses
+SET expires_at = created_at + interval '15 days'
+WHERE expires_at IS NULL;
+
+ALTER TABLE public.analyses ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view their own analyses"
+ON public.analyses;
+
+CREATE POLICY "Users can view their own analyses"
+ON public.analyses
+FOR SELECT
+USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own analyses"
+ON public.analyses;
+
+CREATE POLICY "Users can insert their own analyses"
+ON public.analyses
+FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update their own analyses"
+ON public.analyses;
+
+CREATE POLICY "Users can update their own analyses"
+ON public.analyses
+FOR UPDATE
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete their own analyses"
+ON public.analyses;
+
+CREATE POLICY "Users can delete their own analyses"
+ON public.analyses
+FOR DELETE
+USING (auth.uid() = user_id);
+
+
+-- =========================
+-- Índices recomendados
+-- =========================
+
+CREATE INDEX IF NOT EXISTS idx_analyses_user_created
+ON public.analyses(user_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_analyses_user_status_expiration
+ON public.analyses(user_id, status, expires_at);
