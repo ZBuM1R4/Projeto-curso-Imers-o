@@ -1,35 +1,14 @@
-from pathlib import Path
-
 import streamlit as st
 
 from app.database.profile_db import get_profile, save_profile
 from app.services.network_checker import has_network_connection
 from app.services.temp_file_cleaner import clean_temp_files
+from app.services.avatar_storage import upload_avatar_image_to_storage
 from app.ui.components.avatar import (
     render_avatar,
     render_uploaded_avatar_preview,
 )
 from app.ui.components.navigation import render_back_to_home_button
-
-
-def save_avatar_image(uploaded_file, user_id: str) -> str:
-    if uploaded_file is None:
-        return ""
-
-    avatar_dir = Path("data/profile_images")
-    avatar_dir.mkdir(parents=True, exist_ok=True)
-
-    suffix = Path(uploaded_file.name).suffix.lower()
-
-    if suffix not in [".png", ".jpg", ".jpeg", ".webp"]:
-        suffix = ".png"
-
-    avatar_path = avatar_dir / f"{user_id}{suffix}"
-
-    with open(avatar_path, "wb") as file:
-        file.write(uploaded_file.getbuffer())
-
-    return str(avatar_path)
 
 
 def render_complete_profile(user_id: str, access_token: str):
@@ -80,7 +59,15 @@ def render_complete_profile(user_id: str, access_token: str):
                 st.error("Erro, verifique sua conexão com a rede.")
                 return
 
-            avatar_url = save_avatar_image(avatar_file, user_id)
+            try:
+                avatar_url = upload_avatar_image_to_storage(
+                    avatar_file,
+                    user_id,
+                    access_token
+                )
+            except Exception:
+                st.error("Não foi possível salvar a foto de perfil. Tente novamente.")
+                return
 
             result = save_profile(
                 user_id=user_id,
@@ -123,7 +110,15 @@ def render_profile(user_id: str, access_token: str):
     )
 
     if avatar_file:
-        render_uploaded_avatar_preview(avatar_file, width=120)
+        try:
+            avatar_url = upload_avatar_image_to_storage(
+                avatar_file,
+                user_id,
+                access_token
+            )
+        except Exception:
+            st.error("Não foi possível salvar a foto de perfil. Tente novamente.")
+            return
 
     with st.form("edit_profile_form"):
         col1, col2 = st.columns(2)
@@ -165,7 +160,15 @@ def render_profile(user_id: str, access_token: str):
             avatar_url = profile.get("avatar_url", "")
 
             if avatar_file:
-                avatar_url = save_avatar_image(avatar_file, user_id)
+                try:
+                    avatar_url = upload_avatar_image_to_storage(
+                        avatar_file,
+                        user_id,
+                        access_token
+                    )
+                except Exception:
+                    st.error("Não foi possível salvar a foto de perfil. Tente novamente.")
+                    return
 
             result = save_profile(
                 user_id=user_id,

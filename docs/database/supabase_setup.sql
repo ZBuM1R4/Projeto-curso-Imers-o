@@ -1,5 +1,5 @@
 -- Supabase setup - Projeto Análise de Comunicação
--- Este arquivo documenta a estrutura principal do banco e as policies RLS.
+-- Este arquivo documenta a estrutura principal do banco, policies RLS e Storage.
 -- Não execute novamente em produção sem revisar o estado atual do banco.
 
 -- =========================
@@ -124,3 +124,75 @@ ON public.analyses(user_id, created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_analyses_user_status_expiration
 ON public.analyses(user_id, status, expires_at);
+
+
+-- =========================
+-- Supabase Storage: profile-images
+-- =========================
+
+-- Bucket utilizado para fotos de perfil.
+-- O bucket deve ser criado manualmente no Supabase Storage com o nome:
+-- profile-images
+--
+-- Configuração recomendada:
+-- Public bucket: ON
+-- Allowed MIME types: image/png, image/jpeg, image/webp
+-- File size limit recomendado: 5 MB
+
+-- Remove policy pública ampla de listagem, caso exista.
+-- O bucket pode ser público para exibir imagens via URL pública,
+-- mas a listagem de objetos deve ficar restrita.
+DROP POLICY IF EXISTS "Public can view profile images"
+ON storage.objects;
+
+DROP POLICY IF EXISTS "Users can view their own profile image objects"
+ON storage.objects;
+
+CREATE POLICY "Users can view their own profile image objects"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+    bucket_id = 'profile-images'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+DROP POLICY IF EXISTS "Users can upload their own profile image"
+ON storage.objects;
+
+CREATE POLICY "Users can upload their own profile image"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+    bucket_id = 'profile-images'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+DROP POLICY IF EXISTS "Users can update their own profile image"
+ON storage.objects;
+
+CREATE POLICY "Users can update their own profile image"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+    bucket_id = 'profile-images'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+)
+WITH CHECK (
+    bucket_id = 'profile-images'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+DROP POLICY IF EXISTS "Users can delete their own profile image"
+ON storage.objects;
+
+CREATE POLICY "Users can delete their own profile image"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+    bucket_id = 'profile-images'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+);
