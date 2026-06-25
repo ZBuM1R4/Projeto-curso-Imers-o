@@ -1,76 +1,255 @@
-🚀 Comando do Streamlit (principal):
-        python -m streamlit run app/main.py
-           👉 "CTRL + C" no terminal para parar de rodar
+# COMMANDS.md
 
-🔧 AMBIENTE
-    Ativar ambiente (Git Bash):
-        source .venv/Scripts/activate
+## 🚀 Comando principal do Streamlit
 
-    Criar ambiente (se precisar):
-        python -m venv .venv
+Rodar o aplicativo:
 
+```bash
+python -m streamlit run app/main.py
+```
 
-📦 INSTALAÇÃO
-    Instalar biblioteca:
-        pip install nome-da-lib
+Parar o aplicativo:
 
-    Atualizar requirements:
-        pip freeze > requirements.txt
+```bash
+Ctrl + C
+```
 
-    Instalar dependências do projeto:
-        pip install -r requirements.txt
+---
 
+## 🔧 Ambiente virtual
 
-▶️ EXECUÇÃO
-    Rodar versão terminal (teste rápido):
-        python app/main.py
+Criar ambiente virtual, se precisar:
 
-    Rodar interface (Streamlit):
-        python -m streamlit run app/main.py
+```bash
+python -m venv .venv
+```
 
+Ativar ambiente virtual no Git Bash:
 
-🛑 CONTROLE
-    Parar Streamlit:
-        Ctrl + C
+```bash
+source .venv/Scripts/activate
+```
 
+---
 
-🔎 BUSCAS ÚTEIS NO PROJETO
-    Procurar uma função ou termo no código:
-        grep -R "termo_procurado" app
+## 📦 Instalação e dependências
 
+Instalar dependências do projeto:
 
-🧹 LIMPEZA DE ARQUIVOS TEMPORÁRIOS
-        Limpar vídeos e áudios temporários manualmente:
-            find data/input data/temp -type f ! -name ".gitkeep" -delete
+```bash
+pip install -r requirements.txt
+```
 
+Instalar uma biblioteca específica:
 
+```bash
+pip install nome-da-lib
+```
 
-🧪 DEBUG
-    Ver erros rapidamente:
-        python app/main.py
-            👉 Esse é seu “modo debug rápido”
+Atualizar o `requirements.txt`:
 
+```bash
+pip freeze > requirements.txt
+```
 
-🧾 GIT (versionamento)
-    Ver status:
-        git status
+---
 
-    Adicionar mudanças:
-        git add .
+## ▶️ Execução
 
-    Fazer commit:
-        git commit -m "Mensagem do commit"
+Rodar interface principal:
 
-    Enviar para o repositório remoto:
-        git push origin main
+```bash
+python -m streamlit run app/main.py
+```
 
+Debug rápido de importação/estrutura:
 
-🌱 BRANCH
-    Criar nova branch:
-        git checkout -b nome-da-branch
+```bash
+python app/main.py
+```
 
-    Voltar para main:
-        git checkout main
+Observação: o comando acima não substitui o Streamlit. Ele serve apenas para verificar erros simples de Python/importação.
 
-    Mesclar branch:
-        git merge nome-da-branch
+---
+
+## 🧪 Testes e validações rápidas
+
+Verificar erros de compilação/importação:
+
+```bash
+python -m compileall app
+```
+
+Rodar o app para teste manual:
+
+```bash
+python -m streamlit run app/main.py
+```
+
+Fluxo básico para testar antes de commit:
+
+```text
+Login
+Home
+Análise
+Histórico
+Detalhe da análise
+Perfil
+Logout
+```
+
+---
+
+## 🔎 Buscas úteis no projeto
+
+Procurar uma função ou termo no código:
+
+```bash
+grep -R "termo_procurado" app
+```
+
+Exemplos:
+
+```bash
+grep -R "render_analysis" app
+grep -R "generate_report" app
+grep -R "vicios_de_linguagem" app
+```
+
+Buscar ignorando caches:
+
+```bash
+grep -R "termo_procurado" app --exclude-dir=__pycache__
+```
+
+---
+
+## 🧹 Limpeza de arquivos temporários
+
+Limpar vídeos e áudios temporários manualmente:
+
+```bash
+find data/input data/temp -type f ! -name ".gitkeep" -delete
+```
+
+Limpar caches Python:
+
+```bash
+find app -type d -name "__pycache__" -exec rm -rf {} +
+```
+
+Observação: não limpar `data/profile_images/` com esse comando, pois essa pasta guarda fotos de perfil.
+
+---
+
+## 🧾 Git — versionamento
+
+Ver status:
+
+```bash
+git status
+```
+
+Adicionar mudanças:
+
+```bash
+git add .
+```
+
+Fazer commit:
+
+```bash
+git commit -m "Mensagem do commit"
+```
+
+Enviar para o repositório remoto:
+
+```bash
+git push origin main
+```
+
+Fluxo completo mais usado:
+
+```bash
+git status
+git add .
+git commit -m "Mensagem do commit"
+git push origin main
+```
+
+---
+
+## ✅ Fluxo recomendado antes de commit
+
+Rodar validação:
+
+```bash
+python -m compileall app
+```
+
+Rodar o app:
+
+```bash
+python -m streamlit run app/main.py
+```
+
+Testar rapidamente:
+
+```text
+Login
+Home
+Análise
+Histórico
+Detalhe
+Perfil
+Logout
+```
+
+Depois commitar:
+
+```bash
+git status
+git add .
+git commit -m "Mensagem do commit"
+git push origin main
+```
+
+---
+
+## 🌱 Branches
+
+Criar nova branch:
+
+```bash
+git checkout -b nome-da-branch
+```
+
+Voltar para a branch main:
+
+```bash
+git checkout main
+```
+
+Mesclar branch na branch atual:
+
+```bash
+git merge nome-da-branch
+```
+
+---
+
+## 📁 Pastas importantes
+
+```text
+app/main.py                  Entrada oficial do Streamlit
+app/ui/dashboard.py          Roteador interno da interface
+app/ui/pages/                Páginas do sistema
+app/ui/components/           Componentes reutilizáveis
+app/services/                Serviços e lógica de análise
+app/database/                Integração com Supabase
+app/utils/                   Utilitários
+data/input/                  Vídeos temporários
+data/temp/                   Áudios temporários
+data/output/                 Saídas geradas, se necessário
+data/profile_images/         Fotos de perfil
+```
