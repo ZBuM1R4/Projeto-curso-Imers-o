@@ -76,7 +76,7 @@ Caso não estejam configuradas, o sistema continuará funcionando sem a análise
 ### 5. Rodar aplicação
 
 ```bash
-python -m streamlit run app/ui/dashboard.py
+python -m streamlit run app/main.py
 ```
 
 ## 🎯 Como usar
