@@ -38,7 +38,7 @@ def render_analysis_title(title: str, ai_available: bool):
         st.write(f"📄 {title}")
     else:
         st.write(f"⚠️ 📄 {title}")
-        st.caption("Análise feita sem IA. Resultados podem ser inconsistentes.")
+        st.caption("Análise gerada sem IA. Resultados podem ser menos precisos.")
 
 
 def render_history(user_id: str, access_token: str):
@@ -86,7 +86,7 @@ def render_history(user_id: str, access_token: str):
     analyses = get_all_analyses_supabase(user_id, access_token)
 
     if not analyses:
-        st.info("Nenhuma análise encontrada.")
+        st.info("Nenhuma análise disponível no momento.")
         render_back_to_home_button()
         return
 

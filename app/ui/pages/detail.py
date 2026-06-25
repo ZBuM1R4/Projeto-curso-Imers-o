@@ -29,7 +29,7 @@ def render_detail(user_id: str, access_token: str):
         return
 
     if not report:
-        st.error("Análise não encontrada.")
+        st.error("Análise não encontrada ou não disponível.")
         render_back_to_home_button()
         return
 

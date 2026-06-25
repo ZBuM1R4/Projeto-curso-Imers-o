@@ -5,8 +5,8 @@ from app.services.docx_exporter import build_docx_report
 
 def render_ai_warning():
     st.warning(
-        "⚠️ Esta análise foi gerada sem a avaliação da IA. "
-        "Os resultados podem apresentar inconsistências."
+        "⚠️ Esta análise foi gerada sem avaliação da IA. "
+        "Os resultados podem ser menos precisos."
     )
 
 

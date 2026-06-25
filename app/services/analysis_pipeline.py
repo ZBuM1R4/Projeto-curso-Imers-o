@@ -50,7 +50,7 @@ def generate_report(
 
     if not ai_full_analysis.get("disponivel", False):
         if has_network_connection():
-            st.error("Erro ao conectar com a IA.")
+            st.error("Erro ao conectar com a IA. Tente novamente em instantes.")
         else:
             st.error("Erro, verifique sua conexão com a rede.")
         return None
