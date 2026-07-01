@@ -12,6 +12,7 @@ from app.ui.components.navigation import render_back_to_home_button
 from app.ui.components.report_view import render_report_details
 from app.ui.session_state import clear_analysis_session
 from app.utils.file_manager import save_uploaded_file
+from app.utils.app_mode import get_app_mode_label, is_web_mode
 
 
 def render_analysis_result():
@@ -208,12 +209,38 @@ def process_video_analysis(user_id: str, access_token: str):
         st.rerun()
 
 
+def render_audio_analysis_placeholder():
+    st.subheader("Grave seu discurso")
+
+    st.write(
+        "Na versão web, a análise será feita a partir do áudio gravado diretamente pelo navegador."
+    )
+
+    audio_file = st.audio_input("Clique para gravar seu áudio")
+
+    if audio_file:
+        st.audio(audio_file)
+
+        st.success("Áudio gravado com sucesso.")
+
+        st.info(
+            "Na próxima etapa, este áudio será conectado ao pipeline de transcrição e análise."
+        )
+
+
 def render_analysis(user_id: str, access_token: str):
     if "report" in st.session_state:
         render_analysis_result()
         return
 
     render_analysis_intro()
+
+    st.caption(get_app_mode_label())
+
+    if is_web_mode():
+        render_audio_analysis_placeholder()
+        render_back_to_home_button()
+        return
 
     remaining_analyses = get_remaining_analyses_or_show_error(
         user_id,
