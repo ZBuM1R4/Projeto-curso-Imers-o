@@ -8,6 +8,7 @@ from app.database.supabase_db import (
 from app.services.analysis_pipeline import generate_report
 from app.services.network_checker import has_network_connection
 from app.services.temp_file_cleaner import clean_temp_files
+from app.services.audio_file_manager import save_recorded_audio
 from app.ui.components.navigation import render_back_to_home_button
 from app.ui.components.report_view import render_report_details
 from app.ui.session_state import clear_analysis_session
@@ -221,11 +222,16 @@ def render_audio_analysis_placeholder():
     if audio_file:
         st.audio(audio_file)
 
-        st.success("Áudio gravado com sucesso.")
+        if st.button("Analisar áudio", type="primary"):
+            audio_path = save_recorded_audio(audio_file)
 
-        st.info(
-            "Na próxima etapa, este áudio será conectado ao pipeline de transcrição e análise."
-        )
+            st.session_state["audio_path"] = audio_path
+            st.session_state["uploaded_file_name"] = "Áudio gravado pelo navegador"
+
+            st.success("Áudio salvo temporariamente com sucesso.")
+            st.info(
+                "Na próxima etapa, este áudio será enviado para transcrição e análise."
+            )
 
 
 def render_analysis(user_id: str, access_token: str):
