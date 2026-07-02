@@ -17,23 +17,9 @@ from app.services.score_analyzer import calculate_communication_score
 from app.services.transcriber import transcribe_audio
 
 
-def generate_report(
-    video_path: str,
-    audio_path: str,
-    user_id: str,
-    access_token: str
-):
-    if not has_network_connection():
-        st.error("Erro, verifique sua conexão com a rede.")
-        return None
-
-    extracted_audio = extract_audio(video_path, audio_path)
-
-    if not extracted_audio:
-        return None
-
-    texto = transcribe_audio(extracted_audio)
-    pause_data = analyze_pauses(extracted_audio)
+def build_analysis_from_audio(audio_path: str):
+    texto = transcribe_audio(audio_path)
+    pause_data = analyze_pauses(audio_path)
     sequential_repetitions = analyze_sequential_repetitions(texto)
     frequent_terms = analyze_frequent_terms(texto)
 
@@ -73,6 +59,31 @@ def generate_report(
 
     report["analise_global_ia"] = ai_full_analysis
 
+    return report
+
+
+def generate_report_from_video(
+    video_path: str,
+    audio_path: str,
+    user_id: str,
+    access_token: str
+):
+    if not has_network_connection():
+        st.error("Erro, verifique sua conexão com a rede.")
+        return None
+
+    extracted_audio = extract_audio(video_path, audio_path)
+
+    if not extracted_audio:
+        return None
+
+    report = build_analysis_from_audio(extracted_audio)
+
+    if not report:
+        return None
+
+    report["input_type"] = "video"
+
     try:
         save_analysis_supabase(report, video_path, user_id, access_token)
     except Exception:
@@ -80,3 +91,46 @@ def generate_report(
         return None
 
     return report
+
+
+def generate_report_from_audio(
+    audio_path: str,
+    user_id: str,
+    access_token: str
+):
+    if not has_network_connection():
+        st.error("Erro, verifique sua conexão com a rede.")
+        return None
+
+    if not audio_path:
+        st.error("Nenhum áudio foi encontrado para análise.")
+        return None
+
+    report = build_analysis_from_audio(audio_path)
+
+    if not report:
+        return None
+
+    report["input_type"] = "audio"
+
+    try:
+        save_analysis_supabase(report, audio_path, user_id, access_token)
+    except Exception:
+        st.error("Erro, verifique sua conexão com a rede.")
+        return None
+
+    return report
+
+
+def generate_report(
+    video_path: str,
+    audio_path: str,
+    user_id: str,
+    access_token: str
+):
+    return generate_report_from_video(
+        video_path,
+        audio_path,
+        user_id,
+        access_token
+    )
