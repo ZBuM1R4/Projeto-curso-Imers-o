@@ -5,7 +5,7 @@ from app.database.supabase_db import (
     can_create_analysis_supabase,
     get_remaining_monthly_analyses_supabase,
 )
-from app.services.analysis_pipeline import generate_report
+from app.services.analysis_pipeline import generate_report, generate_report_from_audio
 from app.services.network_checker import has_network_connection
 from app.services.temp_file_cleaner import clean_temp_files
 from app.services.audio_file_manager import save_recorded_audio
@@ -210,7 +210,14 @@ def process_video_analysis(user_id: str, access_token: str):
         st.rerun()
 
 
-def render_audio_analysis_placeholder():
+def render_audio_analysis_placeholder(user_id: str, access_token: str):
+    remaining = get_remaining_analyses_or_show_error(user_id, access_token)
+
+    if remaining is None:
+        return
+
+    render_monthly_limit_status(remaining)
+
     st.subheader("Grave seu discurso")
 
     st.write(
@@ -223,15 +230,25 @@ def render_audio_analysis_placeholder():
         st.audio(audio_file)
 
         if st.button("Analisar áudio", type="primary"):
+            if not can_user_create_analysis_or_show_warning(user_id, access_token):
+                return
+
             audio_path = save_recorded_audio(audio_file)
 
             st.session_state["audio_path"] = audio_path
             st.session_state["uploaded_file_name"] = "Áudio gravado pelo navegador"
 
-            st.success("Áudio salvo temporariamente com sucesso.")
-            st.info(
-                "Na próxima etapa, este áudio será enviado para transcrição e análise."
-            )
+            with st.spinner("Analisando seu áudio..."):
+                report = generate_report_from_audio(
+                    audio_path,
+                    user_id,
+                    access_token
+                )
+
+            if report:
+                st.session_state["report"] = report
+                st.success("Análise concluída com sucesso.")
+                st.rerun()
 
 
 def render_analysis(user_id: str, access_token: str):
@@ -244,7 +261,7 @@ def render_analysis(user_id: str, access_token: str):
     st.caption(get_app_mode_label())
 
     if is_web_mode():
-        render_audio_analysis_placeholder()
+        render_audio_analysis_placeholder(user_id, access_token)
         render_back_to_home_button()
         return
 
