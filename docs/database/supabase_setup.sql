@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS public.analyses (
     user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     title text,
     video_name text,
+    input_type text DEFAULT 'video',
     score integer,
     transcription text,
     report_json jsonb,
@@ -74,10 +75,28 @@ CREATE TABLE IF NOT EXISTS public.analyses (
 ALTER TABLE public.analyses
 ADD COLUMN IF NOT EXISTS expires_at timestamptz,
 ADD COLUMN IF NOT EXISTS status text DEFAULT 'active';
+ADD COLUMN IF NOT EXISTS input_type text DEFAULT 'video',
 
 UPDATE public.analyses
 SET expires_at = created_at + interval '15 days'
 WHERE expires_at IS NULL;
+
+UPDATE public.analyses
+SET input_type = 'video'
+WHERE input_type IS NULL;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'analyses_input_type_check'
+    ) THEN
+        ALTER TABLE public.analyses
+        ADD CONSTRAINT analyses_input_type_check
+        CHECK (input_type IN ('audio', 'video'));
+    END IF;
+END $$;
 
 ALTER TABLE public.analyses ENABLE ROW LEVEL SECURITY;
 
