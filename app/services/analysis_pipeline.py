@@ -15,6 +15,7 @@ from app.services.repetition_analyzer import (
 )
 from app.services.score_analyzer import calculate_communication_score
 from app.services.transcriber import transcribe_audio
+from app.services.audio_file_manager import delete_temp_audio_file
 
 
 def build_analysis_from_audio(audio_path: str):
@@ -106,20 +107,24 @@ def generate_report_from_audio(
         st.error("Nenhum áudio foi encontrado para análise.")
         return None
 
-    report = build_analysis_from_audio(audio_path)
-
-    if not report:
-        return None
-
-    report["input_type"] = "audio"
-
     try:
-        save_analysis_supabase(report, audio_path, user_id, access_token)
-    except Exception:
-        st.error("Erro, verifique sua conexão com a rede.")
-        return None
+        report = build_analysis_from_audio(audio_path)
 
-    return report
+        if not report:
+            return None
+
+        report["input_type"] = "audio"
+
+        try:
+            save_analysis_supabase(report, audio_path, user_id, access_token)
+        except Exception:
+            st.error("Erro, verifique sua conexão com a rede.")
+            return None
+
+        return report
+
+    finally:
+        delete_temp_audio_file(audio_path)
 
 
 def generate_report(

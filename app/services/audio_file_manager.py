@@ -22,3 +22,13 @@ def save_recorded_audio(audio_file) -> str:
         file.write(audio_file.getvalue())
 
     return str(audio_path)
+
+
+def delete_temp_audio_file(audio_path: str):
+    if not audio_path:
+        return
+
+    try:
+        Path(audio_path).unlink(missing_ok=True)
+    except OSError:
+        pass

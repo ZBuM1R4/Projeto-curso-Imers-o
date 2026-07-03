@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from app.services.supabase_client import get_supabase_client
 
 
 MONTHLY_ANALYSIS_LIMIT = 30
 ANALYSIS_EXPIRATION_DAYS = 15
+VALID_INPUT_TYPES = {"audio", "video"}
 
 
 def get_authenticated_client(access_token: str):
@@ -82,6 +84,20 @@ def can_create_analysis_supabase(user_id: str, access_token: str) -> bool:
     return used < MONTHLY_ANALYSIS_LIMIT
 
 
+def get_analysis_title(input_path: str, input_type: str) -> str:
+    if input_type == "audio":
+        return "Áudio gravado pelo navegador"
+
+    return Path(input_path).stem
+
+
+def get_input_reference(input_path: str, input_type: str) -> str:
+    if input_type == "audio":
+        return "audio_recording"
+
+    return input_path
+
+
 def save_analysis_supabase(
     report: dict,
     video_path: str,
@@ -90,7 +106,12 @@ def save_analysis_supabase(
 ):
     supabase = get_authenticated_client(access_token)
 
-    title = video_path.split("/")[-1].split(".")[0]
+    input_type = report.get("input_type", "video")
+
+    if input_type not in VALID_INPUT_TYPES:
+        input_type = "video"
+
+    title = get_analysis_title(video_path, input_type)
     score = report["score_comunicacao"]["score"]
     ai_available = report.get("analise_global_ia", {}).get("disponivel", False)
 
@@ -100,7 +121,8 @@ def save_analysis_supabase(
     data = {
         "user_id": user_id,
         "title": title,
-        "video_name": video_path,
+        "video_name": get_input_reference(video_path, input_type),
+        "input_type": input_type,
         "score": score,
         "transcription": report["transcricao"],
         "report_json": report,
