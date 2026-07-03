@@ -54,10 +54,10 @@ Retorne apenas JSON válido neste formato:
     "fluidez": 0.0,
     "qualidade_comunicacao": 0.0
   }},
-  "analise": "análise objetiva, com os principais problemas e o impacto na comunicação"
+  "analise": "análise objetiva, natural e compreensível para o usuário final"
 }}
 
-Critérios:
+Critérios internos:
 - controle_linguagem: penalize vícios de linguagem, muletas, repetição excessiva, termos soltos e fala desorganizada.
 - clareza: penalize frases confusas, ideias mal conectadas, erros gramaticais e falta de objetividade.
 - formalidade: penalize gírias, coloquialidade excessiva, improviso excessivo e tom pouco profissional.
@@ -71,7 +71,7 @@ Escala obrigatória:
 - 0.61 a 0.80 = bom, poucos problemas.
 - 0.81 a 1.00 = excelente, fala clara, segura e bem estruturada.
 
-Regras:
+Regras de avaliação:
 - se houver muitos vícios, repetições ou fala confusa, controle_linguagem deve ser no máximo 0.35.
 - se as ideias forem difíceis de entender, clareza deve ser no máximo 0.40.
 - se houver travamentos frequentes, fluidez deve ser no máximo 0.40.
@@ -79,6 +79,18 @@ Regras:
 - não dê notas altas para falas apenas compreensíveis.
 - seja rigoroso, não suavize falhas.
 - a análise deve citar problemas concretos percebidos na transcrição.
+
+Regras para o texto da análise:
+- escreva a análise como uma devolutiva para o usuário final.
+- não cite nomes internos das métricas.
+- não use termos como "controle_linguagem", "qualidade_comunicacao" ou qualquer chave do JSON.
+- não coloque nomes de métricas entre aspas.
+- não diga que uma métrica é "nula", "baixa" ou "alta" usando o nome técnico da métrica.
+- explique os problemas em linguagem natural.
+- seja direto, profissional e claro.
+- quando a transcrição parecer apenas um teste de microfone, repetição sem conteúdo ou ruído sem mensagem real, informe que não houve conteúdo suficiente para avaliar uma apresentação de verdade.
+- nesses casos, explique que a nota será baixa porque não houve desenvolvimento de ideias, objetivo comunicativo ou mensagem compreensível.
+- não invente intenção, tema ou contexto que não estejam na transcrição.
 - não use markdown.
 - não escreva nada fora do JSON.
 
