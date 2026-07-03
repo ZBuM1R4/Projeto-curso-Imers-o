@@ -33,12 +33,33 @@ def get_days_until_expiration(expires_at: str) -> int:
         return 0
 
 
+def get_input_type_label(input_type: str) -> str:
+    if input_type == "audio":
+        return "Áudio"
+
+    return "Vídeo"
+
+
+def get_input_type_icon(input_type: str) -> str:
+    if input_type == "audio":
+        return "🎙️"
+
+    return "🎥"
+
+
 def render_analysis_title(title: str, ai_available: bool):
     if ai_available:
         st.write(f"📄 {title}")
     else:
         st.write(f"⚠️ 📄 {title}")
         st.caption("Análise gerada sem IA. Resultados podem ser menos precisos.")
+
+
+def render_analysis_type(input_type: str):
+    icon = get_input_type_icon(input_type)
+    label = get_input_type_label(input_type)
+
+    st.caption(f"{icon} Tipo: {label}")
 
 
 def render_history(user_id: str, access_token: str):
@@ -99,6 +120,7 @@ def render_history(user_id: str, access_token: str):
         created_at = analysis["created_at"]
         ai_available = analysis["ai_available"]
         expires_at = analysis.get("expires_at")
+        input_type = analysis.get("input_type", "video")
 
         days_remaining = get_days_until_expiration(expires_at)
 
@@ -106,6 +128,7 @@ def render_history(user_id: str, access_token: str):
 
         with col1:
             render_analysis_title(title, ai_available)
+            render_analysis_type(input_type)
             st.caption(f"Criada em: {created_at}")
 
         with col2:
@@ -141,7 +164,7 @@ def render_history(user_id: str, access_token: str):
                 st.caption(
                     "Atenção: o limite mensal utilizado por esta análise não será restaurado, "
                     "pois o relatório permanece registrado na nuvem para fins de controle e acompanhamento. "
-                    "O vídeo original não é armazenado no banco de dados."
+                    "O conteúdo bruto original, seja áudio ou vídeo, não é armazenado no banco de dados."
                 )
 
                 cancel_col, confirm_col = st.columns([1, 1])

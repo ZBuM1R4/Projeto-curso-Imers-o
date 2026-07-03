@@ -88,8 +88,6 @@ Regras para o texto da análise:
 - não diga que uma métrica é "nula", "baixa" ou "alta" usando o nome técnico da métrica.
 - explique os problemas em linguagem natural.
 - seja direto, profissional e claro.
-- quando a transcrição parecer apenas um teste de microfone, repetição sem conteúdo ou ruído sem mensagem real, informe que não houve conteúdo suficiente para avaliar uma apresentação de verdade.
-- nesses casos, explique que a nota será baixa porque não houve desenvolvimento de ideias, objetivo comunicativo ou mensagem compreensível.
 - não invente intenção, tema ou contexto que não estejam na transcrição.
 - não use markdown.
 - não escreva nada fora do JSON.
