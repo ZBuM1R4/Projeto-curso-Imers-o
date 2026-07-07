@@ -4,13 +4,26 @@ import os
 from dotenv import load_dotenv
 from google import genai
 
+
 load_dotenv()
 
+
+DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
 
 FALLBACK_MESSAGE = (
     "Análise global por IA indisponível no momento. "
     "O relatório foi gerado com os demais critérios normalmente."
 )
+
+
+def get_gemini_settings() -> tuple[str, str]:
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    model_name = os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL).strip()
+
+    if not model_name:
+        model_name = DEFAULT_GEMINI_MODEL
+
+    return api_key, model_name
 
 
 def extract_json(text: str) -> dict:
@@ -23,17 +36,20 @@ def extract_json(text: str) -> dict:
     return json.loads(text[start:end + 1])
 
 
+def get_ai_unavailable_response(message: str = FALLBACK_MESSAGE) -> dict:
+    return {
+        "disponivel": False,
+        "mensagem": message,
+        "analise": "",
+        "metricas": {},
+    }
+
+
 def analyze_full_transcription_with_gemini(transcription: str) -> dict:
-    api_key = os.getenv("GEMINI_API_KEY")
-    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    api_key, model_name = get_gemini_settings()
 
     if not api_key:
-        return {
-            "disponivel": False,
-            "mensagem": FALLBACK_MESSAGE,
-            "analise": "",
-            "metricas": {},
-        }
+        return get_ai_unavailable_response()
 
     try:
         client = genai.Client(api_key=api_key)
@@ -101,7 +117,12 @@ Transcrição:
             contents=prompt
         )
 
-        parsed = extract_json(response.text)
+        response_text = getattr(response, "text", "") or ""
+
+        if not response_text.strip():
+            raise ValueError("A IA retornou uma resposta vazia.")
+
+        parsed = extract_json(response_text)
 
         return {
             "disponivel": True,
@@ -110,10 +131,7 @@ Transcrição:
             "metricas": parsed.get("metricas", {}),
         }
 
-    except Exception as e:
-        return {
-            "disponivel": False,
-            "mensagem": f"{FALLBACK_MESSAGE} | Erro técnico: {str(e)}",
-            "analise": "",
-            "metricas": {},
-        }
+    except Exception as error:
+        return get_ai_unavailable_response(
+            f"{FALLBACK_MESSAGE} | Erro técnico: {str(error)}"
+        )
