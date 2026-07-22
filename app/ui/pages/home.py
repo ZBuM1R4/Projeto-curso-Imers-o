@@ -22,7 +22,7 @@ def render_home(user_id: str, access_token: str):
         </div>
 
         <div class="hero-description">
-            Envie um vídeo da sua oratória e receba uma análise completa com
+            Envie seu discurso e receba uma análise completa com
             transcrição, organização da fala, pausas, repetições, pontos de atenção
             e uma avaliação geral por inteligência artificial.
         </div>
@@ -40,11 +40,11 @@ def render_home(user_id: str, access_token: str):
                     <div class="home-action-icon">☁️</div>
                     <div class="home-action-title">Iniciar uma nova análise</div>
                     <div class="home-action-text">
-                        Envie um vídeo da sua apresentação ou fala para receber
-                        um feedback estruturado sobre sua comunicação.
+                        Envie seu discurso para receber um feedback estruturado
+                        sobre sua comunicação.
                     </div>
                     <div class="home-action-note">
-                        Formatos aceitos: MP4, MOV, AVI, MKV · Até 2GB
+                        Disponível para análise por áudio na versão web e por vídeo na versão local.
                     </div>
                 </div>
                 """,
@@ -98,7 +98,7 @@ def render_home(user_id: str, access_token: str):
             <div>
                 <div class="privacy-title">Privacidade e segurança em primeiro lugar</div>
                 <div class="privacy-text">
-                    Seus vídeos são privados e utilizados apenas para análise.
+                    Seu conteúdo é privado e utilizado apenas para análise.
                     Não compartilhamos seu conteúdo com terceiros.
                 </div>
             </div>

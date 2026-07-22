@@ -72,8 +72,8 @@ def render_analysis_intro():
     st.title("Análise")
 
     st.write(
-        "Envie um vídeo para iniciar a análise da sua comunicação. "
-        "Após o envio, confira a pré-visualização antes de processar."
+        "Envie ou grave seu discurso para iniciar a análise da sua comunicação. "
+        "Antes de processar, confira se o conteúdo está correto."
     )
 
 
