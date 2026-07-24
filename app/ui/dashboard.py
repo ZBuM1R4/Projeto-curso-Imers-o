@@ -10,6 +10,7 @@ from app.ui.pages.detail import render_detail
 from app.ui.pages.history import render_history
 from app.ui.pages.home import render_home
 from app.ui.pages.profile import render_complete_profile, render_profile
+from app.ui.pages.admin import render_admin
 from app.ui.session_state import get_access_token, get_current_user_id
 from app.ui.styles import apply_global_styles
 
@@ -60,6 +61,9 @@ def run_app():
 
     elif current_page == "profile":
         render_profile(user_id, access_token)
+
+    elif current_page == "admin":
+        render_admin(user_id, access_token)
 
     else:
         st.session_state["page"] = "home"

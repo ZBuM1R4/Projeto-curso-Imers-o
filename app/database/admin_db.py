@@ -1,12 +1,17 @@
 from app.services.supabase_client import get_supabase_client
 
 
+def get_authenticated_client(access_token: str):
+    supabase = get_supabase_client()
+    supabase.postgrest.auth(access_token)
+    return supabase
+
+
 def is_admin_user(user_id: str, access_token: str) -> bool:
     if not user_id or not access_token:
         return False
 
-    supabase = get_supabase_client()
-    supabase.postgrest.auth(access_token)
+    supabase = get_authenticated_client(access_token)
 
     response = (
         supabase
@@ -18,3 +23,42 @@ def is_admin_user(user_id: str, access_token: str) -> bool:
     )
 
     return bool(response.data)
+
+
+def get_admin_profiles(user_id: str, access_token: str):
+    if not is_admin_user(user_id, access_token):
+        return []
+
+    supabase = get_authenticated_client(access_token)
+
+    response = (
+        supabase
+        .table("profiles")
+        .select(
+            "id, first_name, last_name, city, state, created_at"
+        )
+        .order("created_at", desc=True)
+        .execute()
+    )
+
+    return response.data or []
+
+
+def get_admin_analyses(user_id: str, access_token: str):
+    if not is_admin_user(user_id, access_token):
+        return []
+
+    supabase = get_authenticated_client(access_token)
+
+    response = (
+        supabase
+        .table("analyses")
+        .select(
+            "id, user_id, title, input_type, score, ai_available, status, created_at"
+        )
+        .order("created_at", desc=True)
+        .limit(50)
+        .execute()
+    )
+
+    return response.data or []
