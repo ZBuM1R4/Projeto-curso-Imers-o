@@ -1,14 +1,23 @@
 import streamlit as st
 
+from app.database.admin_db import is_admin_user
 from app.database.profile_db import get_profile
 from app.services.temp_file_cleaner import clean_temp_files
 from app.ui.session_state import clear_analysis_session
+
+
+def user_is_admin(user_id: str, access_token: str) -> bool:
+    try:
+        return is_admin_user(user_id, access_token)
+    except Exception:
+        return False
 
 
 def render_sidebar(user_id: str, access_token: str, render_avatar):
     profile = get_profile(user_id, access_token)
     user = st.session_state.get("user")
     user_email = getattr(user, "email", "") if user else ""
+    is_admin = user_is_admin(user_id, access_token)
 
     with st.sidebar:
         st.markdown(
@@ -56,6 +65,11 @@ def render_sidebar(user_id: str, access_token: str, render_avatar):
         if st.button("Perfil"):
             st.session_state["page"] = "profile"
             st.rerun()
+
+        if is_admin:
+            if st.button("Admin"):
+                st.session_state["page"] = "admin"
+                st.rerun()
 
         st.markdown(
             '<div class="sidebar-section-divider"></div>',
