@@ -2,6 +2,7 @@ import streamlit as st
 
 from app.database.admin_db import (
     get_admin_analyses,
+    get_admin_analyses_by_user,
     get_admin_profiles,
     is_admin_user,
 )
@@ -15,6 +16,28 @@ def get_input_type_label(input_type: str) -> str:
         return "Áudio"
 
     return "Vídeo"
+
+
+def get_profile_full_name(profile: dict) -> str:
+    full_name = (
+        f"{profile.get('first_name', '')} "
+        f"{profile.get('last_name', '')}"
+    ).strip()
+
+    if not full_name:
+        return "Usuário sem nome"
+
+    return full_name
+
+
+def get_profile_option_label(profile: dict) -> str:
+    full_name = get_profile_full_name(profile)
+    city = profile.get("city") or "Cidade não informada"
+    state = profile.get("state") or ""
+
+    location = f"{city} {state}".strip()
+
+    return f"{full_name} — {location}"
 
 
 def render_admin_metrics(profiles: list, analyses: list):
@@ -46,36 +69,25 @@ def render_admin_metrics(profiles: list, analyses: list):
         st.metric("Vídeo", total_video)
 
 
-def render_admin_profiles(profiles: list):
-    st.subheader("Usuários cadastrados")
+def render_selected_user_profile(profile: dict):
+    st.subheader("Usuário selecionado")
 
-    if not profiles:
-        st.info("Nenhum usuário encontrado.")
-        return
+    full_name = get_profile_full_name(profile)
+    city = profile.get("city") or "Cidade não informada"
+    state = profile.get("state") or ""
 
-    for profile in profiles:
-        full_name = (
-            f"{profile.get('first_name', '')} "
-            f"{profile.get('last_name', '')}"
-        ).strip()
-
-        if not full_name:
-            full_name = "Usuário sem nome"
-
-        city = profile.get("city") or "Cidade não informada"
-        state = profile.get("state") or ""
-
-        with st.container(border=True):
-            st.write(f"👤 **{full_name}**")
-            st.caption(f"Localização: {city} {state}")
-            st.caption(f"Cadastrado em: {profile.get('created_at')}")
+    with st.container(border=True):
+        st.write(f"👤 **{full_name}**")
+        st.caption(f"Localização: {city} {state}")
+        st.caption(f"Cadastrado em: {profile.get('created_at')}")
+        st.caption(f"ID do usuário: {profile.get('id')}")
 
 
-def render_admin_analyses(analyses: list):
-    st.subheader("Últimas análises")
+def render_user_analyses(analyses: list):
+    st.subheader("Análises do usuário")
 
     if not analyses:
-        st.info("Nenhuma análise encontrada.")
+        st.info("Este usuário ainda não possui análises registradas.")
         return
 
     for analysis in analyses:
@@ -104,7 +116,7 @@ def render_admin_analyses(analyses: list):
                 render_score_badge(score)
 
             with col3:
-                st.caption(f"Usuário: {analysis.get('user_id')}")
+                st.caption(f"ID da análise: {analysis.get('id')}")
 
 
 def render_admin(user_id: str, access_token: str):
@@ -125,19 +137,51 @@ def render_admin(user_id: str, access_token: str):
 
     try:
         profiles = get_admin_profiles(user_id, access_token)
-        analyses = get_admin_analyses(user_id, access_token)
+        all_analyses = get_admin_analyses(user_id, access_token)
     except Exception:
         st.error("Erro, verifique sua conexão com a rede.")
         return
 
-    render_admin_metrics(profiles, analyses)
+    render_admin_metrics(profiles, all_analyses)
 
     st.divider()
 
-    render_admin_profiles(profiles)
+    st.subheader("Filtrar por usuário")
+
+    if not profiles:
+        st.info("Nenhum usuário cadastrado foi encontrado.")
+        render_back_to_home_button()
+        return
+
+    profile_options = {
+        profile["id"]: profile
+        for profile in profiles
+    }
+
+    selected_user_id = st.selectbox(
+        "Selecione um usuário para visualizar as análises",
+        options=list(profile_options.keys()),
+        format_func=lambda profile_id: get_profile_option_label(
+            profile_options[profile_id]
+        )
+    )
+
+    selected_profile = profile_options[selected_user_id]
+
+    try:
+        user_analyses = get_admin_analyses_by_user(
+            user_id,
+            access_token,
+            selected_user_id
+        )
+    except Exception:
+        st.error("Erro, verifique sua conexão com a rede.")
+        return
+
+    render_selected_user_profile(selected_profile)
 
     st.divider()
 
-    render_admin_analyses(analyses)
+    render_user_analyses(user_analyses)
 
     render_back_to_home_button()

@@ -57,7 +57,33 @@ def get_admin_analyses(user_id: str, access_token: str):
             "id, user_id, title, input_type, score, ai_available, status, created_at"
         )
         .order("created_at", desc=True)
-        .limit(50)
+        .execute()
+    )
+
+    return response.data or []
+
+
+def get_admin_analyses_by_user(
+    admin_user_id: str,
+    access_token: str,
+    selected_user_id: str
+):
+    if not is_admin_user(admin_user_id, access_token):
+        return []
+
+    if not selected_user_id:
+        return []
+
+    supabase = get_authenticated_client(access_token)
+
+    response = (
+        supabase
+        .table("analyses")
+        .select(
+            "id, user_id, title, input_type, score, ai_available, status, created_at"
+        )
+        .eq("user_id", selected_user_id)
+        .order("created_at", desc=True)
         .execute()
     )
 
